@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>Seed Admin</title></head>
+<body>
+<h2>Creating admin account...</h2>
+<pre id="log"></pre>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js';
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js';
+  import { getFirestore, doc, setDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js';
+
+  const log = document.getElementById('log');
+  const print = (msg) => { log.textContent += msg + '\n'; };
+
+  const app = initializeApp({
+    apiKey: "AIzaSyBdQk0U8AyccBbqP7L-R2Urxs7T8KDUHmM",
+    authDomain: "chinnu-textiles.firebaseapp.com",
+    projectId: "chinnu-textiles",
+    storageBucket: "chinnu-textiles.firebasestorage.app",
+    messagingSenderId: "772001051450",
+    appId: "1:772001051450:web:06ffff72a56433274e9603"
+  });
+
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const EMAIL = 'admin@chinnutex.com';
+  const PASSWORD = 'admin123';
+
+  try {
+    let uid;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, EMAIL, PASSWORD);
+      uid = cred.user.uid;
+      print('✅ Firebase Auth user created: ' + uid);
+    } catch (e) {
+      if (e.code === 'auth/email-already-in-use') {
+        const cred = await signInWithEmailAndPassword(auth, EMAIL, PASSWORD);
+        uid = cred.user.uid;
+        print('ℹ️ User already exists, signed in: ' + uid);
+      } else {
+        throw e;
+      }
+    }
+
+    await setDoc(doc(db, 'admins', uid), {
+      name: 'Admin',
+      email: EMAIL,
+      role: 'admin',
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
+    });
+    print('✅ Firestore admins/' + uid + ' document created');
+    print('\n🎉 Done! You can now log in to the admin panel with:');
+    print('   Email: ' + EMAIL);
+    print('   Password: ' + PASSWORD);
+    print('\nYou can close this page and delete seed-admin.html.');
+  } catch (e) {
+    print('❌ Error: ' + e.message);
+    print('Make sure Email/Password auth is enabled in Firebase Console.');
+  }
+</script>
+</body>
+</html>
