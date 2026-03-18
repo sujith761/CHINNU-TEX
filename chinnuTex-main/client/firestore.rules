@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own user doc
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Bookings: users can read their own, create new ones
+    match /bookings/{bookingId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Contact messages: users can read their own, create new ones
+    match /contacts/{contactId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Pricing data: readable by anyone
+    match /sizingPrices/{docId} {
+      allow read: if true;
+    }
+    match /weavingPrices/{docId} {
+      allow read: if true;
+    }
+
+    // Products: readable by anyone
+    match /products/{docId} {
+      allow read: if true;
+    }
+
+    // Payments: users can read their own
+    match /payments/{paymentId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Admins collection
+    match /admins/{adminId} {
+      allow read: if request.auth != null && request.auth.uid == adminId;
+    }
+  }
+}

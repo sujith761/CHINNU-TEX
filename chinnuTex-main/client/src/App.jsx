@@ -27,6 +27,8 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import TrackingPage from './pages/TrackingPage';
 import ProfilePage from './pages/ProfilePage';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { ThemeProvider } from './context/ThemeContext';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -54,7 +56,7 @@ function AppContent() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen bg-[var(--page-gradient)]">
+      <div className="flex flex-col min-h-screen bg-[var(--page-gradient)] dark:bg-[var(--page-gradient)] dark:text-slate-200">
         <Navbar />
         <main className="flex-1">
           <Routes>
@@ -120,9 +122,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

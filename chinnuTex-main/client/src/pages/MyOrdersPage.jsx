@@ -1,64 +1,61 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-function StatusBadge({ status }) {
-  const config = {
-    pending: {
-      bg: 'bg-gradient-to-r from-amber-50 to-orange-50',
-      text: 'text-amber-700',
-      border: 'border-amber-200',
-      iconBg: 'bg-amber-100',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    processing: {
-      bg: 'bg-gradient-to-r from-blue-50 to-indigo-50',
-      text: 'text-blue-700',
-      border: 'border-blue-200',
-      iconBg: 'bg-blue-100',
-      icon: (
-        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      )
-    },
-    completed: {
-      bg: 'bg-gradient-to-r from-emerald-50 to-green-50',
-      text: 'text-emerald-700',
-      border: 'border-emerald-200',
-      iconBg: 'bg-emerald-100',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      )
-    },
-    cancelled: {
-      bg: 'bg-gradient-to-r from-rose-50 to-red-50',
-      text: 'text-rose-700',
-      border: 'border-rose-200',
-      iconBg: 'bg-rose-100',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      )
-    }
-  };
-  const style = config[status] || config.pending;
+/* ── Progress Stepper (Amazon-style) ── */
+function OrderProgressBar({ status }) {
+  const steps = ['pending', 'processing', 'completed'];
+  const isCancelled = status === 'cancelled';
+  const currentIdx = isCancelled ? -1 : steps.indexOf(status);
+
+  if (isCancelled) {
+    return (
+      <div className="flex items-center gap-2 mt-3">
+        <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+        </div>
+        <span className="text-sm font-medium text-red-600">Order Cancelled</span>
+      </div>
+    );
+  }
 
   return (
-    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${style.bg} ${style.text} border ${style.border}`}>
-      <span className={`w-6 h-6 rounded-full flex items-center justify-center ${style.iconBg}`}>
-        {style.icon}
-      </span>
-      <span className="capitalize">{status}</span>
-    </span>
+    <div className="mt-3">
+      <div className="flex items-center">
+        {steps.map((step, i) => (
+          <div key={step} className="flex items-center flex-1 last:flex-initial">
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${i <= currentIdx ? 'bg-[#007600]' : 'bg-gray-300'}`}>
+              {i <= currentIdx ? (
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+              ) : (
+                <div className="w-2 h-2 rounded-full bg-white" />
+              )}
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`flex-1 h-1 mx-1 rounded ${i < currentIdx ? 'bg-[#007600]' : 'bg-gray-200'}`} />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[11px] text-gray-500">Order Placed</span>
+        <span className="text-[11px] text-gray-500">Processing</span>
+        <span className="text-[11px] text-gray-500">Delivered</span>
+      </div>
+    </div>
   );
+}
+
+/* ── Status label (Amazon color style) ── */
+function StatusLabel({ status }) {
+  const map = {
+    pending: { text: 'Order Placed — Awaiting Confirmation', color: 'text-[#c45500]' },
+    processing: { text: 'In Progress — Being Processed', color: 'text-[#007600]' },
+    completed: { text: 'Delivered', color: 'text-[#007600]' },
+    cancelled: { text: 'Cancelled', color: 'text-[#cc0c39]' },
+  };
+  const s = map[status] || map.pending;
+  return <span className={`text-sm font-bold ${s.color}`}>{s.text}</span>;
 }
 
 export default function MyOrdersPage() {
@@ -69,19 +66,24 @@ export default function MyOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshTick, setRefreshTick] = useState(0);
-  const [sortDirection, setSortDirection] = useState('desc');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [timePeriod, setTimePeriod] = useState('all');
+  const [expandedOrder, setExpandedOrder] = useState(null);
   const [highlightedOrderId, setHighlightedOrderId] = useState(highlightId?.replace('-status', '').replace('-pay', '') || null);
+
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
+        setLoading(true);
         setError('');
         const res = await api.get('/bookings/my');
         if (active) setOrders(res.data || []);
       } catch (e) {
-        if (active) setError(e.response?.data?.message || 'Failed to load orders');
+        console.error('Orders fetch error:', e);
+        if (active) setError(e.message === 'Not signed in' ? 'Please sign in to view your orders' : (e.response?.data?.message || e.message || 'Failed to load orders'));
       } finally {
         if (active) setLoading(false);
       }
@@ -111,13 +113,6 @@ export default function MyOrdersPage() {
 
   const refresh = () => setRefreshTick((x) => x + 1);
 
-  const filteredOrders = orders.filter(o => filterStatus === 'all' || o.status === filterStatus);
-
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    const diff = new Date(a.createdAt) - new Date(b.createdAt);
-    return sortDirection === 'asc' ? diff : -diff;
-  });
-
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
@@ -128,6 +123,46 @@ export default function MyOrdersPage() {
     }
   };
 
+  /* ── Filtering logic ── */
+  const filteredOrders = useMemo(() => {
+    let result = [...orders];
+
+    // Status filter
+    if (filterStatus !== 'all') {
+      result = result.filter(o => o.status === filterStatus);
+    }
+
+    // Time period filter
+    if (timePeriod !== 'all') {
+      const now = new Date();
+      let cutoff;
+      if (timePeriod === '30') cutoff = new Date(now.getTime() - 30 * 86400000);
+      else if (timePeriod === '90') cutoff = new Date(now.getTime() - 90 * 86400000);
+      else if (timePeriod === '180') cutoff = new Date(now.getTime() - 180 * 86400000);
+      else if (timePeriod === 'year') cutoff = new Date(now.getFullYear(), 0, 1);
+      if (cutoff) result = result.filter(o => new Date(o.createdAt) >= cutoff);
+    }
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(o =>
+        (o.fabricType || '').toLowerCase().includes(q) ||
+        (o.processType || '').toLowerCase().includes(q) ||
+        (o._id || '').toLowerCase().includes(q) ||
+        (o.contactName || '').toLowerCase().includes(q) ||
+        (o.deliveryAddress || '').toLowerCase().includes(q) ||
+        (o.vehicleNumber || '').toLowerCase().includes(q) ||
+        (o.notes || '').toLowerCase().includes(q) ||
+        String(o.totalAmount).includes(q)
+      );
+    }
+
+    // Sort newest first
+    result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return result;
+  }, [orders, filterStatus, timePeriod, searchQuery]);
+
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === 'pending').length,
@@ -136,282 +171,348 @@ export default function MyOrdersPage() {
     cancelled: orders.filter(o => o.status === 'cancelled').length
   };
 
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const formatShortId = (id) => id ? id.slice(-8).toUpperCase() : '—';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 pt-32 pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-4">
-                  <svg className="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  <span className="text-white/80 text-sm font-medium">Order Management</span>
-                </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                  Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Orders</span>
-                </h1>
-                <p className="text-lg text-white/60">Track and manage your fabric processing orders</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
-                  className="px-5 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl font-medium hover:bg-white/20 transition-all flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                  </svg>
-                  {sortDirection === 'desc' ? 'Newest' : 'Oldest'}
-                </button>
-                <button
-                  onClick={refresh}
-                  className="px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-indigo-500/30 transition-all flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-                </button>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#EAEDED] pt-24">
+      {/* ── Top breadcrumb bar ── */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-[1100px] mx-auto px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Link to="/" className="hover:text-[#c45500] hover:underline">Home</Link>
+            <span>›</span>
+            <Link to="/profile" className="hover:text-[#c45500] hover:underline">Your Account</Link>
+            <span>›</span>
+            <span className="text-gray-900 font-medium">Your Orders</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 -mt-16 pb-20 relative z-20">
-        <div className="max-w-6xl mx-auto">
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      {/* ── Main container ── */}
+      <div className="max-w-[1100px] mx-auto px-4 py-6">
+        {/* ── Page title + search bar ── */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <h1 className="text-[28px] font-normal text-gray-900">Your Orders</h1>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 md:w-80">
+              <input
+                type="text"
+                placeholder="Search all orders"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#e77600] focus:border-[#e77600] bg-white shadow-sm"
+              />
+              <svg className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <button
-              onClick={() => setFilterStatus('all')}
-              className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl ${filterStatus === 'all' ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-transparent'}`}
+              onClick={refresh}
+              title="Refresh orders"
+              className="p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 shadow-sm transition-all"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div className="text-3xl font-bold text-slate-800">{stats.total}</div>
-              <div className="text-sm text-slate-500 font-medium">All Orders</div>
-            </button>
-
-            <button
-              onClick={() => setFilterStatus('pending')}
-              className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl ${filterStatus === 'pending' ? 'border-amber-500 ring-4 ring-amber-500/10' : 'border-transparent'}`}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="text-3xl font-bold text-amber-600">{stats.pending}</div>
-              <div className="text-sm text-slate-500 font-medium">Pending</div>
-            </button>
-
-            <button
-              onClick={() => setFilterStatus('processing')}
-              className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl ${filterStatus === 'processing' ? 'border-blue-500 ring-4 ring-blue-500/10' : 'border-transparent'}`}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div className="text-3xl font-bold text-blue-600">{stats.processing}</div>
-              <div className="text-sm text-slate-500 font-medium">Processing</div>
-            </button>
-
-            <button
-              onClick={() => setFilterStatus('completed')}
-              className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl ${filterStatus === 'completed' ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-transparent'}`}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div className="text-3xl font-bold text-emerald-600">{stats.completed}</div>
-              <div className="text-sm text-slate-500 font-medium">Completed</div>
-            </button>
-
-            <button
-              onClick={() => setFilterStatus('cancelled')}
-              className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all hover:shadow-xl ${filterStatus === 'cancelled' ? 'border-rose-500 ring-4 ring-rose-500/10' : 'border-transparent'}`}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-100 to-red-100 rounded-xl flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-3xl font-bold text-rose-600">{stats.cancelled}</div>
-              <div className="text-sm text-slate-500 font-medium">Cancelled</div>
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </button>
           </div>
+        </div>
 
-          {/* Loading State */}
-          {loading && (
-            <div className="bg-white rounded-3xl shadow-xl p-20 text-center border border-slate-100">
-              <div className="w-20 h-20 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <p className="text-slate-600 text-lg font-medium">Loading your orders...</p>
+        {/* ── Filter tabs (status) + time period ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            {[
+              { key: 'all', label: 'All Orders', count: stats.total },
+              { key: 'pending', label: 'Pending', count: stats.pending },
+              { key: 'processing', label: 'Processing', count: stats.processing },
+              { key: 'completed', label: 'Delivered', count: stats.completed },
+              { key: 'cancelled', label: 'Cancelled', count: stats.cancelled },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setFilterStatus(tab.key)}
+                className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-all ${
+                  filterStatus === tab.key
+                    ? 'bg-[#131921] text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {tab.label} {tab.count > 0 && <span className="ml-1 opacity-70">({tab.count})</span>}
+              </button>
+            ))}
+          </div>
+          <select
+            value={timePeriod}
+            onChange={(e) => setTimePeriod(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#e77600] cursor-pointer"
+          >
+            <option value="all">All Time</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Past 3 Months</option>
+            <option value="180">Past 6 Months</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+
+        {/* ── Results count ── */}
+        {!loading && (
+          <p className="text-sm text-gray-600 mb-4">
+            <span className="font-bold">{filteredOrders.length}</span> order{filteredOrders.length !== 1 ? 's' : ''}{searchQuery && ` matching "${searchQuery}"`}
+          </p>
+        )}
+
+        {/* ── Loading ── */}
+        {loading && (
+          <div className="bg-white rounded-lg border border-gray-200 p-16 text-center">
+            <div className="w-12 h-12 border-4 border-[#e77600] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your orders...</p>
+          </div>
+        )}
+
+        {/* ── Error ── */}
+        {error && (
+          <div className="bg-white border border-red-300 rounded-lg p-4 mb-4 flex items-start gap-3">
+            <div className="w-6 h-6 flex-shrink-0 mt-0.5">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <div className="bg-rose-50 border-2 border-rose-200 text-rose-700 px-8 py-6 rounded-2xl flex items-center gap-4">
-              <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-bold">Unable to load orders</p>
-                <p className="text-sm mt-1">{error}</p>
-              </div>
+            <div>
+              <p className="font-bold text-red-700 text-sm">There was a problem</p>
+              <p className="text-sm text-red-600 mt-0.5">{error}</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Empty State */}
-          {!loading && !orders.length && (
-            <div className="bg-white rounded-3xl shadow-xl p-16 text-center border border-slate-100">
-              <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                <svg className="w-12 h-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">No orders yet</h3>
-              <p className="text-slate-500 mb-8 max-w-md mx-auto">You haven't placed any orders. Browse our services to get started!</p>
-              <Link to="/services" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-indigo-500/30 transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Browse Services
-              </Link>
-            </div>
-          )}
+        {/* ── Empty ── */}
+        {!loading && !orders.length && (
+          <div className="bg-white rounded-lg border border-gray-200 p-16 text-center">
+            <svg className="w-20 h-20 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">You have no orders yet</h3>
+            <p className="text-gray-500 mb-6">Looks like you haven't placed any orders. Start exploring our services!</p>
+            <Link
+              to="/services"
+              className="inline-block px-6 py-2.5 bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-[#a88734] rounded-lg text-sm font-medium text-gray-900 hover:from-[#f5d78e] hover:to-[#eeb933] shadow-sm"
+            >
+              Browse Services
+            </Link>
+          </div>
+        )}
 
-          {/* Orders List */}
-          {!loading && sortedOrders.length > 0 && (
-            <div className="space-y-4">
-              {sortedOrders.map((o) => (
+        {/* ── No filtered results ── */}
+        {!loading && orders.length > 0 && filteredOrders.length === 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+            <p className="text-gray-600">No orders match your current filters.</p>
+            <button onClick={() => { setFilterStatus('all'); setSearchQuery(''); setTimePeriod('all'); }} className="mt-3 text-[#007185] hover:text-[#c45500] hover:underline text-sm">
+              Clear all filters
+            </button>
+          </div>
+        )}
+
+        {/* ── Orders List (Amazon-style cards) ── */}
+        {!loading && filteredOrders.length > 0 && (
+          <div className="space-y-5">
+            {filteredOrders.map((o) => {
+              const isExpanded = expandedOrder === o._id;
+              return (
                 <div
                   key={o._id}
                   id={`order-${o._id}`}
-                  className={`bg-white rounded-2xl shadow-lg overflow-hidden border-2 transition-all hover:shadow-xl ${highlightedOrderId === o._id
-                    ? 'border-indigo-500 ring-4 ring-indigo-500/10'
-                    : 'border-transparent hover:border-slate-200'
-                    }`}
+                  className={`bg-white rounded-lg border overflow-hidden transition-shadow hover:shadow-md ${
+                    highlightedOrderId === o._id ? 'border-[#e77600] ring-2 ring-[#e77600]/20' : 'border-gray-200'
+                  }`}
                 >
-                  <div className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                      {/* Icon */}
-                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${o.processType === 'sizing'
-                        ? 'bg-gradient-to-br from-amber-100 to-orange-100'
-                        : 'bg-gradient-to-br from-indigo-100 to-purple-100'
-                        }`}>
-                        {o.processType === 'sizing' ? (
-                          <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                          </svg>
-                        ) : (
-                          <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                          </svg>
+                  {/* ── Amazon-style order header bar ── */}
+                  <div className="bg-[#F0F2F2] border-b border-gray-200 px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                        <div>
+                          <span className="text-gray-500 uppercase tracking-wider block">Order Placed</span>
+                          <span className="text-gray-900 font-medium">{formatDate(o.createdAt)}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 uppercase tracking-wider block">Total</span>
+                          <span className="text-gray-900 font-medium">₹{Number(o.totalAmount).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 uppercase tracking-wider block">Ship To</span>
+                          <span className="text-[#007185] font-medium cursor-default" title={o.deliveryAddress || '—'}>
+                            {o.contactName || '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 uppercase tracking-wider block">Payment</span>
+                          <span className="text-gray-900 font-medium capitalize">{o.paymentMethod === 'cod' ? 'Cash on Delivery' : o.paymentMethod || 'Online'}</span>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs">
+                        <span className="text-gray-500 uppercase tracking-wider block">Order #</span>
+                        <span className="text-[#007185] font-medium">{formatShortId(o._id)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Order body ── */}
+                  <div className="p-4 md:p-5">
+                    <div className="flex flex-col md:flex-row gap-5">
+                      {/* Left: status + progress */}
+                      <div className="flex-1">
+                        <StatusLabel status={o.status} />
+                        <OrderProgressBar status={o.status} />
+
+                        {/* Product details row */}
+                        <div className="flex items-start gap-4 mt-4">
+                          {/* Icon */}
+                          <div className={`w-[90px] h-[90px] rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            o.processType === 'sizing' ? 'bg-amber-50 border border-amber-200' : 'bg-indigo-50 border border-indigo-200'
+                          }`}>
+                            {o.processType === 'sizing' ? (
+                              <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-10 h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                              </svg>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-[15px] font-medium text-[#007185] hover:text-[#c45500] cursor-pointer leading-tight">
+                              {o.fabricType}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1 capitalize">
+                              {o.processType} Service
+                            </p>
+
+                            {/* Key fields grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 mt-2 text-[13px]">
+                              <div><span className="text-gray-500">Quantity:</span> <span className="text-gray-900 font-medium">{o.quantityMeters} m</span></div>
+                              <div><span className="text-gray-500">Rate:</span> <span className="text-gray-900 font-medium">₹{o.costPerMeter}/m</span></div>
+                              <div><span className="text-gray-500">Duration:</span> <span className="text-gray-900 font-medium">{o.duration || '—'}</span></div>
+                              {o.vehicleNumber && (
+                                <div><span className="text-gray-500">Vehicle:</span> <span className="text-gray-900 font-medium">{o.vehicleNumber}</span></div>
+                              )}
+                              {o.paymentStatus && (
+                                <div>
+                                  <span className="text-gray-500">Pay Status:</span>{' '}
+                                  <span className={`font-medium ${o.paymentStatus === 'success' ? 'text-[#007600]' : o.paymentStatus === 'pending' ? 'text-[#c45500]' : 'text-gray-900'}`}>
+                                    {o.paymentStatus === 'success' ? 'Paid' : o.paymentStatus === 'pending' ? 'Pending' : o.paymentStatus}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ── Expandable details ── */}
+                        {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-gray-100">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                              <div className="bg-gray-50 rounded-lg p-3">
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Delivery Details</h4>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    <span className="text-gray-800">{o.contactName || '—'}</span>
+                                  </div>
+                                  <div className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                    <span className="text-gray-800">{o.contactPhone || '—'}</span>
+                                  </div>
+                                  {o.contactEmail && (
+                                    <div className="flex items-start gap-2">
+                                      <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                      <span className="text-gray-800">{o.contactEmail}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-start gap-2">
+                                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    <span className="text-gray-800">{o.deliveryAddress || '—'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-3">
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Order Summary</h4>
+                                <div className="space-y-1.5 text-sm">
+                                  <div className="flex justify-between"><span className="text-gray-500">Fabric Type</span><span className="text-gray-900">{o.fabricType}</span></div>
+                                  <div className="flex justify-between"><span className="text-gray-500">Process</span><span className="text-gray-900 capitalize">{o.processType}</span></div>
+                                  <div className="flex justify-between"><span className="text-gray-500">Quantity</span><span className="text-gray-900">{o.quantityMeters} metres</span></div>
+                                  <div className="flex justify-between"><span className="text-gray-500">Rate</span><span className="text-gray-900">₹{o.costPerMeter}/m</span></div>
+                                  <div className="flex justify-between border-t border-gray-200 pt-1.5 mt-1.5">
+                                    <span className="text-gray-900 font-semibold">Total Amount</span>
+                                    <span className="text-gray-900 font-bold">₹{Number(o.totalAmount).toLocaleString('en-IN')}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            {o.notes && (
+                              <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <h4 className="text-xs font-semibold text-yellow-700 uppercase tracking-wider mb-1">Notes</h4>
+                                <p className="text-sm text-yellow-800">{o.notes}</p>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
 
-                      {/* Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${o.processType === 'sizing'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-indigo-100 text-indigo-700'
-                            }`}>
-                            {o.processType}
-                          </span>
-                          <span className="text-sm text-slate-500">
-                            {new Date(o.createdAt).toLocaleDateString('en-IN', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-1">{o.fabricType}</h3>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                            </svg>
-                            {o.quantityMeters} m
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Amount */}
-                      <div className="text-right">
-                        <div className="text-sm text-slate-500 mb-1">Total</div>
-                        <div className="text-2xl font-bold text-indigo-600">₹{o.totalAmount}</div>
-                      </div>
-
-                      {/* Status & Actions */}
-                      <div className="flex flex-col items-end gap-3">
-                        <StatusBadge status={o.status} />
+                      {/* Right: action buttons */}
+                      <div className="flex flex-row md:flex-col gap-2 md:w-[200px] flex-shrink-0">
+                        <button
+                          onClick={() => navigate(`/track/${o._id}`)}
+                          className="flex-1 md:flex-none px-4 py-2 bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-[#a88734] rounded-lg text-sm font-medium text-gray-900 hover:from-[#f5d78e] hover:to-[#eeb933] shadow-sm text-center"
+                        >
+                          Track Order
+                        </button>
+                        <button
+                          onClick={() => setExpandedOrder(isExpanded ? null : o._id)}
+                          className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm text-center"
+                        >
+                          {isExpanded ? 'Hide Details' : 'View Order Details'}
+                        </button>
+                        {o.status === 'completed' && (
+                          <Link
+                            to="/booking"
+                            state={{ reorder: true, itemSlug: o.fabricType, category: o.processType, item: o.fabricType, price: o.costPerMeter }}
+                            className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm text-center"
+                          >
+                            Order Again
+                          </Link>
+                        )}
                         {o.status === 'pending' && (
                           <button
                             onClick={() => handleCancelOrder(o._id)}
-                            className="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-sm font-semibold hover:bg-rose-100 transition-all flex items-center gap-2"
+                            className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-[#cc0c39] hover:bg-red-50 shadow-sm text-center"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Cancel
+                            Cancel Order
                           </button>
                         )}
-                        <button
-                          onClick={() => navigate(`/track/${o._id}`)}
-                          className="px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-all flex items-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                          </svg>
-                          Track
-                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+        )}
 
-          {/* Help Tip */}
-          {!loading && orders.length > 0 && (
-            <div className="mt-10 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-indigo-800">Pro Tip</p>
-                <p className="text-sm text-indigo-600 mt-1">Click on the status cards above to filter your orders. The refresh button will fetch the latest updates from the server.</p>
-              </div>
+        {/* ── Bottom info strip ── */}
+        {!loading && orders.length > 0 && (
+          <div className="mt-6 bg-white border border-gray-200 rounded-lg p-4 flex items-start gap-3 text-sm">
+            <svg className="w-5 h-5 text-[#007185] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="text-gray-600">
+              <span className="font-medium text-gray-900">Need help?</span> Use the search box to find orders by fabric type, order ID, or contact name. Use the filter tabs and time period dropdown to narrow results. Click "View Order Details" on any order for full information.
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

@@ -15,7 +15,18 @@ export default function AdminLoginPage() {
       await login(email, password);
       navigate('/admin/dashboard');
     } catch (err) {
-      setError(err.message || 'Login failed');
+      const code = err.code || '';
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
+        setError('Incorrect email or password.');
+      } else if (code === 'auth/user-not-found') {
+        setError('No account found with this email.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('Too many failed attempts. Please try again later.');
+      } else if (code === 'auth/user-disabled') {
+        setError('This account has been disabled.');
+      } else {
+        setError(err.message || 'Login failed');
+      }
     }
   };
 

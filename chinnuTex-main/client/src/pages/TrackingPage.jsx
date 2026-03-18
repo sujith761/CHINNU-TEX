@@ -207,7 +207,7 @@ export default function TrackingPage() {
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-slate-50">
                                     <span className="text-slate-500">Method</span>
-                                    <span className="font-bold text-slate-800">Online (Razorpay)</span>
+                                    <span className="font-bold text-slate-800">{order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online (Razorpay)'}</span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-slate-50">
                                     <span className="text-slate-500">Status</span>

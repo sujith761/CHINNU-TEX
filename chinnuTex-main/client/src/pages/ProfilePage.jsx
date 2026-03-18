@@ -72,7 +72,11 @@ export default function ProfilePage() {
                     totalSpent: spent
                 });
             } catch (err) {
-                console.error('Failed to fetch order stats', err);
+                if (err?.code === 'failed-precondition' || err?.message?.includes('requires an index')) {
+                    console.warn('Firestore index required for bookings query. Create it in the Firebase console.');
+                } else {
+                    console.error('Failed to fetch order stats', err);
+                }
             }
         };
 

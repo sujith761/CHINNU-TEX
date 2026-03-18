@@ -1,11 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import services from '../data/services';
 import api from '../services/api';
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
+  const { lang, toggleLang, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [openServices, setOpenServices] = useState(false);
@@ -138,18 +142,18 @@ export default function Navbar() {
   }, [user]);
 
   const whyItems = [
-    { label: 'Savings', to: '/why-chinnu-tex/savings', summary: 'Cost efficiency & bulk advantages', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { label: 'Sustainability', to: '/why-chinnu-tex/sustainability', summary: 'Water reuse, eco-friendly practices', icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
+    { label: t('nav.savings'), to: '/why-chinnu-tex/savings', summary: t('nav.savingsDesc'), icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { label: t('nav.sustainability'), to: '/why-chinnu-tex/sustainability', summary: t('nav.sustainabilityDesc'), icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
   ];
 
   const serviceItems = [
-    { label: 'Sizing', to: '/services', summary: 'Slasher, warp, single-end positioning', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
-    { label: 'Weaving', to: '/services/weaving', summary: 'Modern air-jet loom weaving', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' }
+    { label: t('nav.sizing'), to: '/services', summary: t('nav.sizingDesc'), icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
+    { label: t('nav.weaving'), to: '/services/weaving', summary: t('nav.weavingDesc'), icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' }
   ];
 
   const productItems = [
-    { label: 'Sizing Yarns', to: '/products/sizing', summary: 'Starch, synthetic, blended details', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-    { label: 'Weaving Cloths', to: '/products/weaving', summary: 'High quality grey fabrics', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' }
+    { label: t('nav.sizingYarns'), to: '/products/sizing', summary: t('nav.sizingYarnsDesc'), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+    { label: t('nav.weavingCloths'), to: '/products/weaving', summary: t('nav.weavingClothsDesc'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' }
   ];
 
   const handleLogout = () => {
@@ -207,7 +211,7 @@ export default function Navbar() {
       {/* Elegant Glass Navigation */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-          ? 'py-2 bg-white/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] border-b border-white/20'
+          ? 'py-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] border-b border-white/20 dark:border-slate-700/50'
           : 'py-4 bg-gradient-to-b from-black/30 to-transparent'
           }`}
       >
@@ -226,7 +230,7 @@ export default function Navbar() {
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
               </div>
               <div className="flex flex-col">
-                <span className={`text-lg font-black tracking-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                <span className={`text-lg font-black tracking-tight transition-colors ${scrolled ? 'text-slate-900 dark:text-white' : 'text-white'}`}>
                   CHINNU TEX
                 </span>
                 <span className={`text-[10px] font-semibold tracking-[0.2em] uppercase ${scrolled ? 'text-indigo-600' : 'text-white/70'}`}>
@@ -237,7 +241,7 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center">
-              <div className={`flex items-center gap-1 p-1.5 rounded-2xl transition-all duration-500 ${scrolled ? 'bg-slate-100/80' : 'bg-white/10 backdrop-blur-md border border-white/20'
+              <div className={`flex items-center gap-1 p-1.5 rounded-2xl transition-all duration-500 ${scrolled ? 'bg-slate-100/80 dark:bg-slate-800/80' : 'bg-white/10 backdrop-blur-md border border-white/20'
                 }`}>
 
                 {/* Home */}
@@ -245,14 +249,14 @@ export default function Navbar() {
                   to="/"
                   className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive('/')
                     ? scrolled
-                      ? 'bg-white text-indigo-600 shadow-md'
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                       : 'bg-white/20 text-white'
                     : scrolled
-                      ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                       : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}
                 >
-                  Home
+                  {t('nav.home')}
                 </Link>
 
                 {/* Why Us - Simple Link */}
@@ -260,27 +264,27 @@ export default function Navbar() {
                   to="/why-chinnu-tex"
                   className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive('/why-chinnu-tex')
                     ? scrolled
-                      ? 'bg-white text-indigo-600 shadow-md'
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                       : 'bg-white/20 text-white'
                     : scrolled
-                      ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                       : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}
                 >
-                  Why Us
+                  {t('nav.whyUs')}
                 </Link>
 
                 {/* Services Dropdown */}
                 <div className="relative" onMouseEnter={() => setOpenServices(true)} onMouseLeave={() => setOpenServices(false)}>
                   <button className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${openServices
                     ? scrolled
-                      ? 'bg-white text-indigo-600 shadow-md'
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                       : 'bg-white/20 text-white'
                     : scrolled
-                      ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                       : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}>
-                    Services
+                    {t('nav.services')}
                     <svg className={`w-4 h-4 transition-transform duration-300 ${openServices ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -292,13 +296,13 @@ export default function Navbar() {
                 <div className="relative" onMouseEnter={() => setOpenProducts(true)} onMouseLeave={() => setOpenProducts(false)}>
                   <button className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${openProducts
                     ? scrolled
-                      ? 'bg-white text-indigo-600 shadow-md'
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                       : 'bg-white/20 text-white'
                     : scrolled
-                      ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                       : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}>
-                    Products
+                    {t('nav.products')}
                     <svg className={`w-4 h-4 transition-transform duration-300 ${openProducts ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -312,14 +316,14 @@ export default function Navbar() {
                     to="/my-orders"
                     className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive('/my-orders')
                       ? scrolled
-                        ? 'bg-white text-indigo-600 shadow-md'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                         : 'bg-white/20 text-white'
                       : scrolled
-                        ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                        ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                         : 'text-white/90 hover:bg-white/10 hover:text-white'
                       }`}
                   >
-                    My Orders
+                    {t('nav.myOrders')}
                   </Link>
                 )}
 
@@ -328,20 +332,20 @@ export default function Navbar() {
                   to="/contact"
                   className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${isActive('/contact')
                     ? scrolled
-                      ? 'bg-white text-indigo-600 shadow-md'
+                      ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md'
                       : 'bg-white/20 text-white'
                     : scrolled
-                      ? 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:shadow-sm'
                       : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}
                 >
-                  Contact
+                  {t('nav.contact')}
                 </Link>
               </div>
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
 
               {/* Notifications */}
               {user && (
@@ -405,19 +409,45 @@ export default function Navbar() {
               {/* User Section */}
               {user ? (
                 <div className="flex items-center gap-2">
-                  <Link to="/profile" className={`hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 ${scrolled ? 'bg-slate-100 hover:bg-slate-200' : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'}`}>
-                    <span className={`text-sm font-bold ${scrolled ? 'text-slate-800' : 'text-white'}`}>{user.name}</span>
-                    <span className={`text-[10px] font-medium uppercase tracking-wider ${scrolled ? 'text-indigo-600' : 'text-white/70'}`}>Client</span>
+                  <Link to="/profile" className={`hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-300 ${scrolled ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700' : 'bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20'}`}>
+                    <span className={`text-sm font-bold ${scrolled ? 'text-slate-800 dark:text-white' : 'text-white'}`}>{user.name}</span>
+                    <span className={`text-[10px] font-medium uppercase tracking-wider ${scrolled ? 'text-indigo-600 dark:text-indigo-400' : 'text-white/70'}`}>{t('nav.client')}</span>
                   </Link>
                   <button
                     onClick={handleLogout}
                     className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${scrolled
-                      ? 'bg-slate-100 text-slate-600 hover:bg-rose-100 hover:text-rose-600'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:text-rose-600'
                       : 'bg-white/10 backdrop-blur-md text-white hover:bg-rose-500/20 hover:text-rose-300 border border-white/20'
                       }`}
-                    title="Logout"
+                    title={t('nav.logout')}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  </button>
+                  {/* Language Toggle */}
+                  <button
+                    onClick={toggleLang}
+                    title={lang === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch to English'}
+                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center text-xs font-bold transition-all duration-300 ${scrolled
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
+                      }`}
+                  >
+                    {lang === 'en' ? 'த' : 'EN'}
+                  </button>
+                  {/* Theme Toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center transition-all duration-300 ${scrolled
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
+                      }`}
+                  >
+                    {theme === 'light' ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    )}
                   </button>
                 </div>
               ) : (
@@ -425,18 +455,44 @@ export default function Navbar() {
                   <Link
                     to="/login"
                     className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${scrolled
-                      ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                       : 'text-white/90 hover:bg-white/10 hover:text-white border border-white/20'
                       }`}
                   >
-                    Sign In
+                    {t('nav.signIn')}
                   </Link>
                   <Link
                     to="/register"
                     className="px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white hover:shadow-lg hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    Get Started
+                    {t('nav.getStarted')}
                   </Link>
+                  {/* Language Toggle */}
+                  <button
+                    onClick={toggleLang}
+                    title={lang === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch to English'}
+                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center text-xs font-bold transition-all duration-300 ${scrolled
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
+                      }`}
+                  >
+                    {lang === 'en' ? 'த' : 'EN'}
+                  </button>
+                  {/* Theme Toggle */}
+                  <button
+                    onClick={toggleTheme}
+                    title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center transition-all duration-300 ${scrolled
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
+                      }`}
+                  >
+                    {theme === 'light' ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    )}
+                  </button>
                 </div>
               )}
 
@@ -444,7 +500,7 @@ export default function Navbar() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className={`lg:hidden w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${scrolled
-                  ? 'bg-slate-100 text-slate-600'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                   : 'bg-white/10 backdrop-blur-md text-white border border-white/20'
                   }`}
               >
@@ -462,17 +518,37 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div className={`lg:hidden transition-all duration-500 overflow-hidden ${mobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className={`mt-4 mx-4 p-4 rounded-2xl ${scrolled ? 'bg-slate-50' : 'bg-white/10 backdrop-blur-xl border border-white/20'}`}>
+          <div className={`mt-4 mx-4 p-4 rounded-2xl ${scrolled ? 'bg-slate-50 dark:bg-slate-800' : 'bg-white/10 backdrop-blur-xl border border-white/20'}`}>
             <div className="space-y-2">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${isActive('/') ? (scrolled ? 'bg-white text-indigo-600 shadow-md' : 'bg-white/20 text-white') : (scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10')}`}>Home</Link>
-              <Link to="/why-chinnu-tex/savings" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Why Us - Savings</Link>
-              <Link to="/why-chinnu-tex/sustainability" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Why Us - Sustainability</Link>
-              <Link to="/services" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Services - Sizing</Link>
-              <Link to="/services/weaving" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Services - Weaving</Link>
-              <Link to="/products/sizing" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Products - Sizing</Link>
-              <Link to="/products/weaving" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Products - Weaving</Link>
-              {user && <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>My Orders</Link>}
-              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 hover:bg-white' : 'text-white/90 hover:bg-white/10'}`}>Contact</Link>
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${isActive('/') ? (scrolled ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-md' : 'bg-white/20 text-white') : (scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10')}`}>{t('nav.home')}</Link>
+              <Link to="/why-chinnu-tex/savings" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.whyUsSavings')}</Link>
+              <Link to="/why-chinnu-tex/sustainability" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.whyUsSustainability')}</Link>
+              <Link to="/services" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.servicesSizing')}</Link>
+              <Link to="/services/weaving" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.servicesWeaving')}</Link>
+              <Link to="/products/sizing" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.productsSizing')}</Link>
+              <Link to="/products/weaving" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.productsWeaving')}</Link>
+              {user && <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.myOrders')}</Link>}
+              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl font-semibold transition-colors ${scrolled ? 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700' : 'text-white/90 hover:bg-white/10'}`}>{t('nav.contact')}</Link>
+
+              {/* Mobile Language & Theme Toggles */}
+              <div className="flex items-center gap-3 px-4 pt-3 border-t border-slate-200 dark:border-slate-700 mt-3">
+                <button
+                  onClick={toggleLang}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${scrolled ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm' : 'bg-white/20 text-white'}`}
+                >
+                  {lang === 'en' ? 'தமிழ்' : 'English'}
+                </button>
+                <button
+                  onClick={toggleTheme}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${scrolled ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm' : 'bg-white/20 text-white'}`}
+                >
+                  {theme === 'light' ? (
+                    <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg> {t('theme.dark')}</>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg> {t('theme.light')}</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

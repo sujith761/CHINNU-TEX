@@ -1,10 +1,10 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBdQk0U8AyccBbqP7L-R2Urxs7T8KDUHmM",
-  authDomain: "chinnu-textiles.firebaseapp.com",
+  authDomain: "chinnu-tex-admin.web.app",
   projectId: "chinnu-textiles",
   storageBucket: "chinnu-textiles.firebasestorage.app",
   messagingSenderId: "772001051450",
@@ -12,7 +12,7 @@ const firebaseConfig = {
   measurementId: "G-S6QME3JGFL"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 

@@ -10,32 +10,56 @@ const toDoc = (snap) => ({ _id: snap.id, id: snap.id, ...snap.data() });
 const toDocs = (snap) => snap.docs.map(toDoc);
 const uid = () => auth.currentUser?.uid;
 
+// Wait for Firebase Auth to be ready before querying
+function waitForAuth() {
+  return new Promise((resolve) => {
+    if (auth.currentUser) return resolve(auth.currentUser);
+    const unsub = auth.onAuthStateChanged((user) => {
+      unsub();
+      resolve(user);
+    });
+  });
+}
+
 // ---------- Firestore handlers ----------
 
 // BOOKINGS
 async function getMyBookings() {
-  const q = query(collection(db, 'bookings'), where('userId', '==', uid()), orderBy('createdAt', 'desc'));
+  const user = await waitForAuth();
+  if (!user) throw new Error('Not signed in');
+  const q = query(collection(db, 'bookings'), where('userId', '==', user.uid));
   const snap = await getDocs(q);
-  return toDocs(snap).map(b => ({
+  const docs = toDocs(snap).map(b => ({
     ...b,
     payment: b.paymentId ? { _id: b.paymentId, status: b.paymentStatus || 'created' } : null
   }));
+  return docs.sort((a, b) => {
+    const ta = a.createdAt?.toMillis?.() || 0;
+    const tb = b.createdAt?.toMillis?.() || 0;
+    return tb - ta;
+  });
 }
 
 async function createBooking(body) {
   const user = auth.currentUser;
-  // Stock validation
+  // Stock validation — look up by doc ID, then fall back to slug field query
   const colName = body.processType === 'sizing' ? 'sizingPrices' : 'weavingPrices';
-  const matRef = doc(db, colName, body.fabricType);
-  const matSnap = await getDoc(matRef);
+  let matSnap = await getDoc(doc(db, colName, body.fabricType));
+  if (!matSnap.exists()) {
+    const q = query(collection(db, colName), where('slug', '==', body.fabricType));
+    const results = await getDocs(q);
+    if (!results.empty) matSnap = results.docs[0];
+  }
   if (matSnap.exists()) {
     const mat = matSnap.data();
-    if (mat.stockQuantity < body.quantityMeters) {
+    if (mat.stockQuantity != null && mat.stockQuantity < body.quantityMeters) {
       const err = new Error(`Insufficient stock. Available: ${mat.stockQuantity}`);
       err.response = { data: { message: err.message } };
       throw err;
     }
-    await updateDoc(matRef, { stockQuantity: mat.stockQuantity - body.quantityMeters });
+    if (mat.stockQuantity != null) {
+      await updateDoc(matSnap.ref || doc(db, colName, matSnap.id), { stockQuantity: mat.stockQuantity - body.quantityMeters });
+    }
   }
   const docData = {
     userId: user.uid,
@@ -53,6 +77,7 @@ async function createBooking(body) {
     contactPhone: body.contactPhone,
     contactEmail: body.contactEmail || '',
     deliveryAddress: body.deliveryAddress,
+    paymentMethod: body.paymentMethod || 'online',
     status: 'pending',
     paymentId: null,
     createdAt: now(),
@@ -75,18 +100,28 @@ async function getAllSizingPrices() {
   return toDocs(await getDocs(q));
 }
 async function getSizingBySlug(slug) {
+  // Try by document ID first
   const snap = await getDoc(doc(db, 'sizingPrices', slug));
-  if (!snap.exists()) { const e = new Error('Not found'); e.response = { data: { message: 'Sizing price not found' } }; throw e; }
-  return toDoc(snap);
+  if (snap.exists()) return toDoc(snap);
+  // Fallback: query by slug field
+  const q = query(collection(db, 'sizingPrices'), where('slug', '==', slug));
+  const results = await getDocs(q);
+  if (!results.empty) return toDoc(results.docs[0]);
+  const e = new Error('Not found'); e.response = { data: { message: 'Sizing price not found' } }; throw e;
 }
 async function getAllWeavingPrices() {
   const q = query(collection(db, 'weavingPrices'), where('isActive', '==', true), orderBy('pricePerMetre'));
   return toDocs(await getDocs(q));
 }
 async function getWeavingBySlug(slug) {
+  // Try by document ID first
   const snap = await getDoc(doc(db, 'weavingPrices', slug));
-  if (!snap.exists()) { const e = new Error('Not found'); e.response = { data: { message: 'Weaving price not found' } }; throw e; }
-  return toDoc(snap);
+  if (snap.exists()) return toDoc(snap);
+  // Fallback: query by slug field
+  const q = query(collection(db, 'weavingPrices'), where('slug', '==', slug));
+  const results = await getDocs(q);
+  if (!results.empty) return toDoc(results.docs[0]);
+  const e = new Error('Not found'); e.response = { data: { message: 'Weaving price not found' } }; throw e;
 }
 async function calculateSizingCost(body) {
   const price = await getSizingBySlug(body.slug);
@@ -127,6 +162,34 @@ async function createPaymentOrder(body) {
   const ref = await addDoc(collection(db, 'payments'), payDoc);
   const key = import.meta.env.VITE_RAZORPAY_KEY_ID || '';
   return { orderId: undefined, key, amount: Math.round(Number(body.amount) * 100), currency: 'INR', paymentId: ref.id };
+}
+
+async function createCodPayment(body) {
+  const user = auth.currentUser;
+  const payDoc = {
+    userId: user.uid,
+    userName: user.displayName || user.email,
+    userEmail: user.email,
+    amount: Number(body.amount),
+    currency: 'INR',
+    method: 'cod',
+    status: 'pending',
+    deleted: false,
+    createdAt: now(),
+    updatedAt: now()
+  };
+  const ref = await addDoc(collection(db, 'payments'), payDoc);
+  if (body.bookingId) {
+    const bookRef = doc(db, 'bookings', body.bookingId);
+    await updateDoc(bookRef, {
+      paymentId: ref.id,
+      paymentMethod: 'cod',
+      paymentStatus: 'pending',
+      status: 'processing',
+      updatedAt: now()
+    });
+  }
+  return { _id: ref.id, ...payDoc };
 }
 
 async function verifyPayment(body) {
@@ -356,6 +419,7 @@ async function routePost(url, body) {
   if (path === '/bookings') return createBooking(body);
   if (path === '/payments/order') return createPaymentOrder(body);
   if (path === '/payments/verify') return verifyPayment(body);
+  if (path === '/payments/cod') return createCodPayment(body);
   if (path === '/contact') return createContact(body);
   if (path === '/pricing/calculate/sizing') return calculateSizingCost(body);
   if (path === '/pricing/calculate/weaving') return calculateWeavingCost(body);
