@@ -129,8 +129,10 @@ export default function PaymentsPage() {
                         {p.status}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-white/30 font-mono">{p.razorpayOrderId || 'N/A'}</td>
-                    <td className="p-4 text-sm text-white/30">{new Date(p.createdAt).toLocaleDateString()}</td>
+                    <td className="p-4 text-sm text-white/30 font-mono">{p.razorpayOrderId || p._id}</td>
+                    <td className="p-4 text-sm text-white/30">
+                      {p.createdAt ? (p.createdAt.toDate ? p.createdAt.toDate().toLocaleDateString() : new Date(p.createdAt).toLocaleDateString()) : '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

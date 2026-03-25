@@ -12,24 +12,24 @@ export default function ServiceDetailPage() {
 
   // We simply reuse the same product data for search context
   const yarnTypes = [
-    { name: 'Cotton', slug: 'cotton', pricePerKg: 450 },
-    { name: 'Polyester', slug: 'polyester', pricePerKg: 520 },
-    { name: 'Viscose', slug: 'viscose', pricePerKg: 480 },
-    { name: 'PC Blend', slug: 'pc-blend', pricePerKg: 510 },
-    { name: 'PV Blend', slug: 'pv-blend', pricePerKg: 490 },
-    { name: 'Nylon', slug: 'nylon', pricePerKg: 550 },
-    { name: 'Acrylic', slug: 'acrylic', pricePerKg: 470 }
+    { name: 'Cotton', slug: 'cotton', pricePerKg: 285 },
+    { name: 'Polyester', slug: 'polyester', pricePerKg: 310 },
+    { name: 'Viscose', slug: 'viscose', pricePerKg: 295 },
+    { name: 'PC Blend', slug: 'pc-blend', pricePerKg: 305 },
+    { name: 'PV Blend', slug: 'pv-blend', pricePerKg: 290 },
+    { name: 'Nylon', slug: 'nylon', pricePerKg: 340 },
+    { name: 'Acrylic', slug: 'acrylic', pricePerKg: 265 }
   ];
 
   const clothTypes = [
-    { name: 'Cotton', slug: 'cotton', pricePerMetre: 280 },
-    { name: 'Rayon', slug: 'rayon', pricePerMetre: 320 },
-    { name: 'Polyester', slug: 'polyester', pricePerMetre: 250 },
-    { name: 'Silk', slug: 'silk', pricePerMetre: 450 },
-    { name: 'Woollen', slug: 'woollen', pricePerMetre: 380 },
-    { name: 'Linen', slug: 'linen', pricePerMetre: 400 },
-    { name: 'Nylon', slug: 'nylon', pricePerMetre: 240 },
-    { name: 'Acrylic', slug: 'acrylic', pricePerMetre: 220 }
+    { name: 'Cotton', slug: 'cotton', pricePerMetre: 175 },
+    { name: 'Rayon', slug: 'rayon', pricePerMetre: 210 },
+    { name: 'Polyester', slug: 'polyester', pricePerMetre: 155 },
+    { name: 'Silk', slug: 'silk', pricePerMetre: 345 },
+    { name: 'Woollen', slug: 'woollen', pricePerMetre: 275 },
+    { name: 'Linen', slug: 'linen', pricePerMetre: 295 },
+    { name: 'Nylon', slug: 'nylon', pricePerMetre: 145 },
+    { name: 'Acrylic', slug: 'acrylic', pricePerMetre: 135 }
   ];
 
   // Handle search

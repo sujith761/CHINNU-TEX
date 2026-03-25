@@ -75,6 +75,8 @@ export default function Navbar() {
 
         const readIds = getReadIds();
 
+        const parseDate = (d) => d ? (d.toDate ? d.toDate() : new Date(d)) : new Date();
+
         const contactNotes = (contactRes.data || [])
           .filter((m) => m.reply)
           .map((m) => ({
@@ -83,7 +85,7 @@ export default function Navbar() {
             title: 'Admin replied to your message',
             body: m.reply,
             meta: m.message,
-            at: new Date(m.updatedAt || m.createdAt),
+            at: parseDate(m.updatedAt || m.createdAt),
             read: readIds.has(m._id)
           }));
 
@@ -102,7 +104,7 @@ export default function Navbar() {
               type: 'booking',
               title: statusText,
               body: `${b.processType} – ${b.fabricType} (${b.quantityMeters}m)`,
-              at: new Date(b.updatedAt || b.createdAt),
+              at: parseDate(b.updatedAt || b.createdAt),
               read: readIds.has(`${b._id}-status`)
             });
           }
@@ -120,7 +122,7 @@ export default function Navbar() {
                 type: 'payment',
                 title: payText,
                 body: `Amount ₹${b.payment.amount || b.totalAmount}`,
-                at: new Date(b.payment.updatedAt || b.payment.createdAt || b.updatedAt || b.createdAt),
+                at: parseDate(b.payment.updatedAt || b.payment.createdAt || b.updatedAt || b.createdAt),
                 read: readIds.has(`${b._id}-pay`)
               });
             }
@@ -423,17 +425,7 @@ export default function Navbar() {
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                   </button>
-                  {/* Language Toggle */}
-                  <button
-                    onClick={toggleLang}
-                    title={lang === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch to English'}
-                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center text-xs font-bold transition-all duration-300 ${scrolled
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
-                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
-                      }`}
-                  >
-                    {lang === 'en' ? 'த' : 'EN'}
-                  </button>
+
                   {/* Theme Toggle */}
                   <button
                     onClick={toggleTheme}
@@ -467,17 +459,7 @@ export default function Navbar() {
                   >
                     {t('nav.getStarted')}
                   </Link>
-                  {/* Language Toggle */}
-                  <button
-                    onClick={toggleLang}
-                    title={lang === 'en' ? 'தமிழுக்கு மாற்று' : 'Switch to English'}
-                    className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center text-xs font-bold transition-all duration-300 ${scrolled
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-600 dark:hover:text-indigo-400'
-                      : 'bg-white/10 backdrop-blur-md text-white hover:bg-white/20 border border-white/20'
-                      }`}
-                  >
-                    {lang === 'en' ? 'த' : 'EN'}
-                  </button>
+
                   {/* Theme Toggle */}
                   <button
                     onClick={toggleTheme}
@@ -532,12 +514,7 @@ export default function Navbar() {
 
               {/* Mobile Language & Theme Toggles */}
               <div className="flex items-center gap-3 px-4 pt-3 border-t border-slate-200 dark:border-slate-700 mt-3">
-                <button
-                  onClick={toggleLang}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${scrolled ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm' : 'bg-white/20 text-white'}`}
-                >
-                  {lang === 'en' ? 'தமிழ்' : 'English'}
-                </button>
+
                 <button
                   onClick={toggleTheme}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${scrolled ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm' : 'bg-white/20 text-white'}`}

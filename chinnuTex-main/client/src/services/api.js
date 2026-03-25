@@ -1,7 +1,7 @@
 import { db, auth } from '../firebase';
 import {
   collection, addDoc, getDocs, query, where, orderBy,
-  doc, updateDoc, deleteDoc, getDoc, setDoc, Timestamp
+  doc, updateDoc, getDoc, setDoc, Timestamp
 } from 'firebase/firestore';
 
 // ---------- helpers ----------
@@ -156,6 +156,8 @@ async function createPaymentOrder(body) {
     currency: 'INR',
     status: 'created',
     deleted: false,
+    bookingId: body.bookingId || null,
+    razorpayOrderId: null,
     createdAt: now(),
     updatedAt: now()
   };
@@ -175,6 +177,7 @@ async function createCodPayment(body) {
     method: 'cod',
     status: 'pending',
     deleted: false,
+    bookingId: body.bookingId || null,
     createdAt: now(),
     updatedAt: now()
   };
@@ -193,10 +196,12 @@ async function createCodPayment(body) {
 }
 
 async function verifyPayment(body) {
-  const { razorpay_payment_id, paymentId, bookingId } = body;
+  const { razorpay_payment_id, razorpay_order_id, razorpay_signature, paymentId, bookingId } = body;
   const payRef = doc(db, 'payments', paymentId);
   await updateDoc(payRef, {
     razorpayPaymentId: razorpay_payment_id || '',
+    razorpayOrderId: razorpay_order_id || null,
+    bookingId: bookingId || null,
     status: 'success',
     updatedAt: now()
   });
@@ -231,13 +236,13 @@ async function getMyContactMessages() {
   const userId = uid();
   const email = auth.currentUser?.email;
   // Query by userId
-  const q1 = query(collection(db, 'contactMessages'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+  const q1 = query(collection(db, 'contactMessages'), where('userId', '==', userId));
   const snap1 = await getDocs(q1);
   const byId = toDocs(snap1);
   // Also query by email in case userId wasn't set
   let byEmail = [];
   if (email) {
-    const q2 = query(collection(db, 'contactMessages'), where('userEmail', '==', email), orderBy('createdAt', 'desc'));
+    const q2 = query(collection(db, 'contactMessages'), where('userEmail', '==', email));
     const snap2 = await getDocs(q2);
     byEmail = toDocs(snap2);
   }
@@ -246,6 +251,12 @@ async function getMyContactMessages() {
   for (const m of [...byId, ...byEmail]) {
     if (!seen.has(m._id)) { seen.add(m._id); merged.push(m); }
   }
+  // Sort client-side to prevent Firebase composite index requirements
+  merged.sort((a, b) => {
+    const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+    const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+    return timeB - timeA;
+  });
   return merged;
 }
 

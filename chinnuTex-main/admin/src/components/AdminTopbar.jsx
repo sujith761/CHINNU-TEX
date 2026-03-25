@@ -113,13 +113,13 @@ export default function AdminTopbar() {
         const userNotes = (usersRes.data || [])
           .slice(0, 10)
           .map((u) => ({
-            _id: `${u._id}-user`,
+            _id: `${u.id || u._id}-user`,
             type: 'user',
             title: 'New user registered',
             body: `${u.name} (${u.email})`,
-            meta: `Registered on: ${new Date(u.createdAt).toLocaleDateString()}`,
-            at: new Date(u.createdAt),
-            read: readIds.has(`${u._id}-user`),
+            meta: `Registered on: ${u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : new Date(u.createdAt).toLocaleDateString()) : 'N/A'}`,
+            at: u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt)) : new Date(),
+            read: readIds.has(`${u.id || u._id}-user`),
             link: '/admin/users'
           }));
 

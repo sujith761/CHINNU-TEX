@@ -27,7 +27,7 @@ export default function TrackingPage() {
                     }
                     setLoading(false);
                 }
-            } catch (err) {
+            } catch {
                 if (active) {
                     setError('Failed to track order');
                     setLoading(false);
@@ -70,20 +70,8 @@ export default function TrackingPage() {
         { id: 'completed', label: 'Completed', desc: 'Ready for delivery/pickup', icon: 'M5 13l4 4L19 7' }
     ];
 
-    const currentStepIndex = steps.findIndex(s => s.id === order.status) === -1
-        ? (order.status === 'cancelled' ? -1 : 1) // Default to processing if unknown
-        : steps.findIndex(s => s.id === order.status);
-
     // If processing, show Quality Check as pending step visually
     // If completed, show all steps as done
-
-    const getStepStatus = (index) => {
-        if (order.status === 'cancelled') return 'error';
-        if (order.status === 'completed') return 'completed';
-        if (order.status === 'processing') return index <= 1 ? 'current' : 'pending';
-        if (order.status === 'pending') return index === 0 ? 'current' : 'pending';
-        return 'pending';
-    };
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
@@ -142,21 +130,12 @@ export default function TrackingPage() {
                             <div className="relative pl-8 border-l-2 border-slate-100 space-y-12 my-12">
                                 {steps.map((step, idx) => {
                                     // Determine visual state
-                                    let state = 'pending';
-                                    if (order.status === 'completed') state = 'completed';
-                                    else if (order.status === 'cancelled' && idx === 0) state = 'completed'; // Show first step as done even if cancelled
-                                    else if (order.status === 'cancelled') state = 'pending';
-                                    else if (order.status === 'processing') state = idx <= 1 ? (idx === 1 ? 'current' : 'completed') : 'pending';
-                                    else if (order.status === 'pending') state = idx === 0 ? 'current' : 'pending';
-
-                                    // For Quality Check (idx 2): if Processing, show as pending. If Completed, show as completed.
-
-                                    if (idx === 2 && order.status === 'processing') state = 'pending'; // QC comes after processing
+                                    if (idx === 2 && order.status === 'processing'); // QC comes after processing
 
 
                                     // Simply matching steps to status for this simple model
                                     const isActive = (stat) => {
-                                        if (stat === 'completed') return true;
+                                        if (stat === 'completed') return order.status === 'completed';
                                         if (stat === 'quality_check') return order.status === 'completed'; // QC done only when completed
                                         if (stat === 'processing') return order.status === 'processing' || order.status === 'completed';
                                         if (stat === 'pending') return true; // Always true
@@ -185,10 +164,18 @@ export default function TrackingPage() {
                             </div>
 
                             <div className="bg-indigo-50 rounded-2xl p-6 mt-8 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Estimated Completion</p>
-                                    <p className="text-lg font-bold text-indigo-900">{order.duration}</p>
-                                </div>
+                                    <div className="flex gap-8">
+                                        <div>
+                                            <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Order Date</p>
+                                            <p className="text-lg font-bold text-indigo-900">
+                                                {order.createdAt ? (order.createdAt.toDate ? order.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })) : '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">Estimated Completion</p>
+                                            <p className="text-lg font-bold text-indigo-900">{order.duration}</p>
+                                        </div>
+                                    </div>
                                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </div>

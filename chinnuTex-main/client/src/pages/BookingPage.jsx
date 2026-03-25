@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
@@ -19,7 +19,7 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedItem = location.state;
-  const selectedItems = location.state?.items || [];
+  const selectedItems = location.state?.items;
 
   const [bookingData, setBookingData] = useState({
     processType: '',
@@ -170,7 +170,7 @@ export default function BookingPage() {
       } else {
         try { await loadRazorpay(); } catch { showMessage('Payment gateway failed to load. Please refresh.', 'error'); setIsProcessing(false); return; }
         showMessage('Booking created! Opening payment...', 'success');
-        const orderRes = await api.post('/payments/order', { amount: total });
+        const orderRes = await api.post('/payments/order', { amount: total, bookingId: booking.data._id });
         const { orderId, key, amount, currency, paymentId } = orderRes.data;
         sessionStorage.setItem('pendingPayment', JSON.stringify({ paymentId, bookingId: booking.data._id, orderId, amount: total, timestamp: new Date().toISOString() }));
         const options = {
@@ -202,34 +202,57 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f3f6] font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 pt-28 pb-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 text-blue-200 text-sm mb-4">
-            <button onClick={() => navigate(-1)} className="hover:text-white transition-colors">Back</button>
+      <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 pt-28 pb-8 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-[60px]" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex items-center gap-2 text-indigo-200 text-sm mb-4 animate-fade-in-up">
+            <button onClick={() => navigate(-1)} className="hover:text-white transition-colors flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              Back
+            </button>
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
             <span className="text-white font-medium">Checkout</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">Secure Checkout</h1>
-          <p className="text-blue-200 text-sm">Complete your order in a few simple steps</p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-1 animate-fade-in-up delay-100">Secure Checkout</h1>
+          <p className="text-indigo-200 text-sm animate-fade-in-up delay-200">Complete your order in a few simple steps</p>
         </div>
       </div>
 
-      {/* Progress Steps */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+      {/* Animated Progress Steps */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-center max-w-lg mx-auto">
-            {[{ n: 1, label: 'Review' }, { n: 2, label: 'Payment' }, { n: 3, label: 'Confirmation' }].map((s, i) => (
+            {[{ n: 1, label: 'Review', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' }, { n: 2, label: 'Payment', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z' }, { n: 3, label: 'Done', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }].map((s, i) => (
               <div key={s.n} className="flex items-center flex-1 last:flex-none">
-                <div className="flex items-center gap-2">
-                  <div className={'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ' +
-                    (step >= s.n ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500')}>
-                    {step > s.n ? <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg> : s.n}
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-500 ${
+                    step > s.n
+                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/30 scale-100'
+                      : step === s.n
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-110'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
+                  }`}>
+                    {step > s.n ? (
+                      <svg className="w-5 h-5 animate-scale-in" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={s.icon} /></svg>
+                    )}
                   </div>
-                  <span className={'text-sm font-medium hidden sm:block ' + (step >= s.n ? 'text-blue-600' : 'text-gray-400')}>{s.label}</span>
+                  <span className={`text-sm font-semibold hidden sm:block transition-colors duration-300 ${
+                    step >= s.n ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'
+                  }`}>{s.label}</span>
                 </div>
-                {i < 2 && <div className={'flex-1 h-0.5 mx-3 ' + (step > s.n ? 'bg-blue-600' : 'bg-gray-200')}></div>}
+                {i < 2 && (
+                  <div className="flex-1 mx-4 h-1 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700 ease-smooth progress-bar-animated"
+                      style={{ width: step > s.n ? '100%' : '0%' }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -239,13 +262,13 @@ export default function BookingPage() {
       {/* Message */}
       {message && (
         <div className="container mx-auto px-4 mt-4">
-          <div className={'rounded-lg p-3 flex items-center gap-3 text-sm font-medium ' +
-            (messageType === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-             messageType === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
-             'bg-blue-50 text-blue-700 border border-blue-200')}>
+          <div className={'rounded-xl p-3.5 flex items-center gap-3 text-sm font-medium animate-slide-up border ' +
+            (messageType === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' :
+             messageType === 'error' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' :
+             'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800')}>
             {messageType === 'success' && <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
             {messageType === 'error' && <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            {messageType === 'info' && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>}
+            {messageType === 'info' && <div className="w-4 h-4 border-2 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>}
             {message}
           </div>
         </div>
@@ -258,56 +281,56 @@ export default function BookingPage() {
           <div className="lg:col-span-2 space-y-4">
             {/* Order Item Card */}
             {selectedItems && selectedItems.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                  <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in-up">
+                <div className="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
                     Order Summary ({selectedItems.length} items)
                   </h2>
-                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded uppercase">{location.state?.category}</span>
+                  <span className="px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold rounded-lg uppercase tracking-wider">{location.state?.category}</span>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="p-5 space-y-4">
                   {selectedItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-sm">{item.item}</h3>
-                        <p className="text-xs text-gray-500">₹{item.price} per {item.unit}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">{item.item}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">₹{item.price} per {item.unit}</p>
                       </div>
                       <div className="text-right ml-4">
-                        <div className="text-sm text-gray-500">{item.quantity} {item.unit}</div>
-                        <div className="text-lg font-bold text-gray-900">₹{(item.price * item.quantity).toLocaleString()}</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">{item.quantity} {item.unit}</div>
+                        <div className="text-lg font-bold text-slate-900 dark:text-white">₹{(item.price * item.quantity).toLocaleString()}</div>
                       </div>
                     </div>
                   ))}
-                  <div className="border-t border-gray-200 pt-3 flex items-center justify-between">
-                    <span className="font-bold text-gray-900">Subtotal</span>
-                    <span className="font-bold text-gray-900 text-lg">₹{total.toLocaleString()}</span>
+                  <div className="border-t border-slate-200 dark:border-slate-700 pt-4 flex items-center justify-between">
+                    <span className="font-bold text-slate-900 dark:text-white">Subtotal</span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400 text-xl">₹{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
             ) : selectedItem && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                  <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in-up">
+                <div className="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
                     Order Summary
                   </h2>
                   <div className="flex gap-2">
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded uppercase">{selectedItem.type}</span>
-                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded uppercase">{selectedItem.category}</span>
+                    <span className="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg uppercase tracking-wider">{selectedItem.type}</span>
+                    <span className="px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold rounded-lg uppercase tracking-wider">{selectedItem.category}</span>
                   </div>
                 </div>
-                <div className="p-4 flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                <div className="p-5 flex items-center gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-indigo-500/20">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 text-lg">{selectedItem.item}</h3>
-                    <p className="text-sm text-gray-500">₹{bookingData.costPerMeter} per {bookingData.unit}</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedItem.item}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">₹{bookingData.costPerMeter} per {bookingData.unit}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-gray-500">Qty: {bookingData.quantity} {bookingData.unit}</div>
-                    <div className="text-xl font-bold text-gray-900">₹{total.toLocaleString()}</div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">Qty: {bookingData.quantity} {bookingData.unit}</div>
+                    <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">₹{total.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -315,38 +338,38 @@ export default function BookingPage() {
 
             {/* Contact & Delivery (Step 1) */}
             {step === 1 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                  <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 animate-fade-in-up delay-100">
+                <div className="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                  <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     Contact & Delivery Details
                   </h2>
                 </div>
-                <div className="p-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-5">
+                  <div className="grid md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Contact Name *</label>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 tracking-wider">Contact Name *</label>
                       <input type="text" value={bookingData.contactName} onChange={(e) => setBookingData({ ...bookingData, contactName: e.target.value })}
-                        className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-sm" placeholder="Full name" />
+                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-sm dark:text-white" placeholder="Full name" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Phone Number *</label>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 tracking-wider">Phone Number *</label>
                       <input type="tel" value={bookingData.contactPhone} onChange={(e) => setBookingData({ ...bookingData, contactPhone: e.target.value })}
-                        className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-sm" placeholder="+91 ..." />
+                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-sm dark:text-white" placeholder="+91 ..." />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Email</label>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 tracking-wider">Email</label>
                       <input type="email" value={bookingData.contactEmail} onChange={(e) => setBookingData({ ...bookingData, contactEmail: e.target.value })}
-                        className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-sm" placeholder="your@email.com" />
+                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-sm dark:text-white" placeholder="your@email.com" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Delivery Address</label>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 tracking-wider">Delivery Address</label>
                       <input type="text" value={bookingData.deliveryAddress} onChange={(e) => setBookingData({ ...bookingData, deliveryAddress: e.target.value })}
-                        className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-sm" placeholder="Full address" />
+                        className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-sm dark:text-white" placeholder="Full address" />
                     </div>
                   </div>
                   <button onClick={goToPayment}
-                    className="mt-6 w-full py-3 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                    className="mt-8 w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 active:scale-[0.98]">
                     CONTINUE TO PAYMENT
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </button>
@@ -356,50 +379,50 @@ export default function BookingPage() {
 
             {/* Payment Method (Step 2) */}
             {step === 2 && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                  <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                <div className="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     Payment Method
                   </h2>
-                  <button onClick={() => setStep(1)} className="text-blue-600 text-sm font-medium hover:underline">Edit Details</button>
+                  <button onClick={() => setStep(1)} className="text-indigo-600 dark:text-indigo-400 text-sm font-semibold hover:underline">Edit Details</button>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="p-5 space-y-4">
                   {/* Online Payment */}
                   <label onClick={() => setPaymentMethod('online')}
-                    className={'flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ' +
-                      (paymentMethod === 'online' ? 'border-blue-500 bg-blue-50/50' : 'border-gray-200 hover:border-gray-300')}>
-                    <div className={'w-5 h-5 rounded-full border-2 flex items-center justify-center ' + (paymentMethod === 'online' ? 'border-blue-500' : 'border-gray-300')}>
-                      {paymentMethod === 'online' && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>}
+                    className={'flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ' +
+                      (paymentMethod === 'online' ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600')}>
+                    <div className={'w-5 h-5 rounded-full border-2 flex items-center justify-center ' + (paymentMethod === 'online' ? 'border-indigo-500' : 'border-slate-300 dark:border-slate-600')}>
+                      {paymentMethod === 'online' && <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full"></div>}
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold text-gray-900 text-sm">Pay Online</div>
-                      <div className="text-xs text-gray-500">Cards, UPI, Net Banking via Razorpay</div>
+                      <div className="font-bold text-slate-900 dark:text-white text-sm">Pay Online</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Cards, UPI, Net Banking via Razorpay</div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-8 h-5 bg-blue-600 rounded text-white text-[8px] font-bold flex items-center justify-center">VISA</div>
-                      <div className="w-8 h-5 bg-green-600 rounded text-white text-[8px] font-bold flex items-center justify-center">UPI</div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-9 h-6 bg-indigo-600 rounded-md text-white text-[9px] font-bold flex items-center justify-center shadow-sm">VISA</div>
+                      <div className="w-9 h-6 bg-green-600 rounded-md text-white text-[9px] font-bold flex items-center justify-center shadow-sm">UPI</div>
                     </div>
                   </label>
 
                   {/* COD */}
                   <label onClick={() => setPaymentMethod('cod')}
-                    className={'flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ' +
-                      (paymentMethod === 'cod' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 hover:border-gray-300')}>
-                    <div className={'w-5 h-5 rounded-full border-2 flex items-center justify-center ' + (paymentMethod === 'cod' ? 'border-green-500' : 'border-gray-300')}>
-                      {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>}
+                    className={'flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ' +
+                      (paymentMethod === 'cod' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20' : 'border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600')}>
+                    <div className={'w-5 h-5 rounded-full border-2 flex items-center justify-center ' + (paymentMethod === 'cod' ? 'border-emerald-500' : 'border-slate-300 dark:border-slate-600')}>
+                      {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>}
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold text-gray-900 text-sm">Cash on Delivery</div>
-                      <div className="text-xs text-gray-500">Pay when you receive your order</div>
+                      <div className="font-bold text-slate-900 dark:text-white text-sm">Cash on Delivery</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Pay when you receive your order</div>
                     </div>
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                   </label>
 
                   {/* Delivery Summary */}
-                  <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600 mt-2">
-                    <div className="flex items-center gap-2 mb-1"><span className="font-medium text-gray-700">Deliver to:</span> {bookingData.contactName}</div>
-                    {bookingData.deliveryAddress && <div className="text-xs text-gray-500">{bookingData.deliveryAddress}</div>}
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 text-sm text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700/50">
+                    <div className="flex items-center gap-2 mb-1"><span className="font-semibold text-slate-700 dark:text-slate-300">Deliver to:</span> {bookingData.contactName}</div>
+                    {bookingData.deliveryAddress && <div className="text-xs text-slate-500 dark:text-slate-500">{bookingData.deliveryAddress}</div>}
                   </div>
                 </div>
               </div>
@@ -408,72 +431,92 @@ export default function BookingPage() {
 
           {/* Right: Price Summary & Action */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 sticky top-16">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <h3 className="font-bold text-gray-900 text-sm uppercase">Price Details</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 sticky top-24 overflow-hidden animate-fade-in-down delay-200">
+              <div className="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-widest">Price Details</h3>
               </div>
-              <div className="p-4 space-y-3 text-sm">
+              <div className="p-5 space-y-4 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Price ({bookingData.quantity} {bookingData.unit})</span>
-                  <span className="text-gray-900">₹{total.toLocaleString()}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Price ({bookingData.quantity} {bookingData.unit})</span>
+                  <span className="text-slate-900 dark:text-white font-medium">₹{total.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Delivery</span>
-                  <span className="text-green-600 font-medium">{total >= 5000 ? 'FREE' : '₹200'}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Delivery</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{total >= 5000 ? 'FREE' : '₹200'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Platform Fee</span>
-                  <span className="text-green-600 font-medium">FREE</span>
+                  <span className="text-slate-600 dark:text-slate-400">Platform Fee</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">FREE</span>
                 </div>
-                <div className="border-t border-dashed border-gray-200 pt-3 flex justify-between">
-                  <span className="font-bold text-gray-900 text-base">Total Amount</span>
-                  <span className="font-bold text-gray-900 text-base">₹{(total + (total >= 5000 ? 0 : 200)).toLocaleString()}</span>
+                <div className="border-t border-dashed border-slate-200 dark:border-slate-700 pt-4 flex justify-between">
+                  <span className="font-bold text-slate-900 dark:text-white text-base">Total Amount</span>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">₹{(total + (total >= 5000 ? 0 : 200)).toLocaleString()}</span>
                 </div>
                 {total >= 5000 && (
-                  <div className="bg-green-50 text-green-700 text-xs font-medium p-2 rounded flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold p-3 rounded-xl flex items-center gap-2 border border-emerald-100 dark:border-emerald-800/50">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                     You save ₹200 on delivery!
                   </div>
                 )}
               </div>
 
-              <div className="p-4 border-t border-gray-200 space-y-2">
+              <div className="p-5 border-t border-slate-200 dark:border-slate-700 space-y-3">
                 {step === 2 && (
-                  <button onClick={handleSubmit} disabled={isProcessing}
-                    className="w-full py-3 bg-orange-500 text-white rounded-lg font-bold text-sm hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isProcessing ? (
-                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
-                    ) : paymentMethod === 'cod' ? (
-                      <>CONFIRM ORDER</>
+                  <>
+                    {!hasPendingPayment ? (
+                      <button onClick={handleSubmit} disabled={isProcessing}
+                        className="w-full py-4 bg-gradient-to-r from-orange-500 to-rose-500 text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]">
+                        {isProcessing ? (
+                          <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Processing...</>
+                        ) : paymentMethod === 'cod' ? (
+                          <>CONFIRM ORDER</>
+                        ) : (
+                          <>PAY ₹{(total + (total >= 5000 ? 0 : 200)).toLocaleString()}</>
+                        )}
+                      </button>
                     ) : (
-                      <>PAY ₹{(total + (total >= 5000 ? 0 : 200)).toLocaleString()}</>
+                      <div className="space-y-3 animate-fade-in-up">
+                        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 p-3.5 rounded-xl">
+                          <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-1 leading-none">Unfinished Payment Found</p>
+                          <p className="text-[11px] text-amber-600 dark:text-amber-500 italic">You have a previous booking attempt that wasn't completed.</p>
+                        </div>
+                        <button onClick={handleResumePayment} disabled={isProcessing}
+                          className="w-full py-4 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-amber-500/20">
+                          {isProcessing ? (
+                            <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Resuming...</>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                              Resume Payment
+                            </>
+                          )}
+                        </button>
+                        <button 
+                          onClick={() => { if(window.confirm('Clear pending payment and start new booking?')) { sessionStorage.removeItem('pendingPayment'); window.location.reload(); } }}
+                          className="w-full py-2 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest"
+                        >
+                          Cancel & Start New
+                        </button>
+                      </div>
                     )}
-                  </button>
-                )}
-
-                {hasPendingPayment && (
-                  <button onClick={handleResumePayment} disabled={isProcessing}
-                    className="w-full py-3 bg-amber-500 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    Resume Payment
-                  </button>
+                  </>
                 )}
 
                 <button onClick={() => navigate(-1)}
-                  className="w-full py-3 bg-gray-100 text-gray-600 rounded-lg font-medium text-sm hover:bg-gray-200 transition-colors">
+                  className="w-full py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
                   Go Back
                 </button>
               </div>
 
               {/* Trust Badges */}
-              <div className="px-4 pb-4 flex items-center justify-center gap-4 text-gray-400 text-xs">
-                <div className="flex items-center gap-1">
+              <div className="px-5 pb-5 flex items-center justify-center gap-5 text-slate-400 dark:text-slate-500 text-[11px] font-medium">
+                <div className="flex items-center gap-1.5 hover:text-indigo-500 transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                  Safe & Secure
+                  Secure SSL
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 hover:text-emerald-500 transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Fast Delivery
+                  Fast Tracking
                 </div>
               </div>
             </div>

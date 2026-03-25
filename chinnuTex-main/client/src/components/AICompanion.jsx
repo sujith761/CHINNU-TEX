@@ -71,7 +71,7 @@ export default function AICompanion() {
         };
 
         recognitionRef.current = recog;
-    }, [status]);
+    }, [status, handleVoiceCommand]);
 
     // Initialize chatbot session
     useEffect(() => {
@@ -81,14 +81,14 @@ export default function AICompanion() {
             }
             setUnreadCount(0);
         }
-    }, [isOpen]);
+    }, [isOpen, sessionId, initiateChatbot]);
 
     // Auto-scroll to latest message
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const initiateChatbot = async () => {
+    async function initiateChatbot() {
         try {
             const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             setSessionId(newSessionId);
@@ -105,9 +105,9 @@ export default function AICompanion() {
         } catch (error) {
             console.error('Error initializing chatbot:', error);
         }
-    };
+    }
 
-    const handleVoiceCommand = (text) => {
+    function handleVoiceCommand(text) {
         const q = text.toLowerCase();
 
         // Navigation check first
@@ -126,7 +126,7 @@ export default function AICompanion() {
 
         // If not navigation, send to bot
         sendMessageToBot(text);
-    };
+    }
 
     const speak = (text) => {
         if (!voiceEnabled || !synthRef.current) return;

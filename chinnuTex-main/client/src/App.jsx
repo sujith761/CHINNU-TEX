@@ -3,6 +3,8 @@ import { useContext, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AICompanion from './components/AICompanion';
+import NewsletterPopup from './components/NewsletterPopup';
+import LiveChatWidget from './components/LiveChatWidget';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import WeavingServicesPage from './pages/WeavingServicesPage';
@@ -56,7 +58,7 @@ function AppContent() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen bg-[var(--page-gradient)] dark:bg-[var(--page-gradient)] dark:text-slate-200">
+      <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900 dark:text-slate-200">
         <Navbar />
         <main className="flex-1">
           <Routes>
@@ -68,6 +70,7 @@ function AppContent() {
             <Route path="/why-chinnu-tex/savings" element={<SavingsPage />} />
             <Route path="/why-chinnu-tex/sustainability" element={<SustainabilityPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/bleaching" element={<ProductsPage />} />
             <Route path="/products/sizing" element={<SizingPage />} />
             <Route path="/products/sizing/:yarnType" element={<SizingDetailPage />} />
             <Route path="/products/weaving" element={<WeavingPage />} />
@@ -115,6 +118,8 @@ function AppContent() {
         </main>
         <Footer />
         <AICompanion />
+        <LiveChatWidget />
+        <NewsletterPopup />
       </div>
     </BrowserRouter>
   );

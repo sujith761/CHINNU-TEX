@@ -9,34 +9,34 @@ export default function SizingDetailPage() {
   const [showSearch, setShowSearch] = useState(false);
 
   const yarnTypes = [
-    { name: 'Cotton', slug: 'cotton', pricePerKg: 450 },
-    { name: 'Polyester', slug: 'polyester', pricePerKg: 520 },
-    { name: 'Viscose', slug: 'viscose', pricePerKg: 480 },
-    { name: 'PC Blend', slug: 'pc-blend', pricePerKg: 510 },
-    { name: 'PV Blend', slug: 'pv-blend', pricePerKg: 490 },
-    { name: 'Nylon', slug: 'nylon', pricePerKg: 550 },
-    { name: 'Acrylic', slug: 'acrylic', pricePerKg: 470 }
+    { name: 'Cotton', slug: 'cotton', pricePerKg: 285 },
+    { name: 'Polyester', slug: 'polyester', pricePerKg: 310 },
+    { name: 'Viscose', slug: 'viscose', pricePerKg: 295 },
+    { name: 'PC Blend', slug: 'pc-blend', pricePerKg: 305 },
+    { name: 'PV Blend', slug: 'pv-blend', pricePerKg: 290 },
+    { name: 'Nylon', slug: 'nylon', pricePerKg: 340 },
+    { name: 'Acrylic', slug: 'acrylic', pricePerKg: 265 }
   ];
 
   const clothTypes = [
-    { name: 'Cotton', slug: 'cotton', pricePerMetre: 280 },
-    { name: 'Rayon', slug: 'rayon', pricePerMetre: 320 },
-    { name: 'Polyester', slug: 'polyester', pricePerMetre: 250 },
-    { name: 'Silk', slug: 'silk', pricePerMetre: 450 },
-    { name: 'Woollen', slug: 'woollen', pricePerMetre: 380 },
-    { name: 'Linen', slug: 'linen', pricePerMetre: 400 },
-    { name: 'Nylon', slug: 'nylon', pricePerMetre: 240 },
-    { name: 'Acrylic', slug: 'acrylic', pricePerMetre: 220 }
+    { name: 'Cotton', slug: 'cotton', pricePerMetre: 175 },
+    { name: 'Rayon', slug: 'rayon', pricePerMetre: 210 },
+    { name: 'Polyester', slug: 'polyester', pricePerMetre: 155 },
+    { name: 'Silk', slug: 'silk', pricePerMetre: 345 },
+    { name: 'Woollen', slug: 'woollen', pricePerMetre: 275 },
+    { name: 'Linen', slug: 'linen', pricePerMetre: 295 },
+    { name: 'Nylon', slug: 'nylon', pricePerMetre: 145 },
+    { name: 'Acrylic', slug: 'acrylic', pricePerMetre: 135 }
   ];
 
   const yarnImages = {
-    'cotton': 'https://images.unsplash.com/photo-1599122762299-5e85c0a36c0c?w=600&h=400&fit=crop',
-    'polyester': 'https://images.unsplash.com/photo-1578771746014-b94066fb4578?w=600&h=400&fit=crop',
-    'viscose': 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&h=400&fit=crop',
-    'pc-blend': 'https://images.unsplash.com/photo-1608919291141-a0659c826505?w=600&h=400&fit=crop',
-    'pv-blend': 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=600&h=400&fit=crop',
-    'nylon': 'https://images.unsplash.com/photo-1574701148211-c798a4018fe3?w=600&h=400&fit=crop',
-    'acrylic': 'https://images.unsplash.com/photo-1611987720121-46c63300e859?w=600&h=400&fit=crop'
+    'cotton': '/images/products/cotton.png',
+    'polyester': '/images/products/polyester.png',
+    'viscose': '/images/products/viscose.png',
+    'pc-blend': '/images/products/polyester.png',
+    'pv-blend': '/images/products/viscose.png',
+    'nylon': '/images/products/nylon.png',
+    'acrylic': '/images/products/nylon.png'
   };
 
   const yarn = yarnTypes.find((y) => y.slug === yarnType);

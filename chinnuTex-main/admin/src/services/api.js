@@ -38,6 +38,11 @@ async function getAdminPayments(params) {
     if (p.bookingId) {
       const bSnap = await getDoc(doc(db, 'bookings', p.bookingId));
       if (bSnap.exists()) booking = toDoc(bSnap);
+    } else {
+      const bq = query(collection(db, 'bookings'), where('userId', '==', p.userId));
+      const fallbackSnaps = await getDocs(bq);
+      const possibleBookings = toDocs(fallbackSnaps);
+      booking = possibleBookings.find(b => b.totalAmount === p.amount) || null;
     }
     results.push({
       ...p,

@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { pricingApi } from '../services/api';
 
@@ -19,14 +19,14 @@ export default function WeavingPage() {
   };
 
   const clothImages = {
-    'cotton': 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&h=400&fit=crop&q=80',
-    'rayon': 'https://images.unsplash.com/photo-1563166302-ab8e008432b8?w=600&h=400&fit=crop&q=80',
-    'polyester': 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&h=400&fit=crop&q=80',
-    'silk': 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=600&h=400&fit=crop&q=80',
-    'woollen': 'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=400&fit=crop&q=80',
-    'linen': 'https://images.unsplash.com/photo-1594761077380-a02eb76f7df9?w=600&h=400&fit=crop&q=80',
-    'nylon': 'https://images.unsplash.com/photo-1522768323590-7912ed921970?w=600&h=400&fit=crop&q=80',
-    'acrylic': 'https://images.unsplash.com/photo-1616599810694-cb88b70ee991?w=600&h=400&fit=crop&q=80'
+    'cotton': '/images/products/cotton.png',
+    'rayon': '/images/products/viscose.png',
+    'polyester': '/images/products/polyester.png',
+    'silk': '/images/products/silk.png',
+    'woollen': '/images/products/woollen.png',
+    'linen': '/images/products/linen.png',
+    'nylon': '/images/products/nylon.png',
+    'acrylic': '/images/products/nylon.png'
   };
 
   useEffect(() => {
@@ -40,14 +40,14 @@ export default function WeavingPage() {
         console.error('Error fetching weaving prices:', err);
         setError('Failed to load pricing data');
         setClothTypes([
-          { fabricType: 'Cotton', slug: 'cotton', pricePerMetre: 280, stockQuantity: 500 },
-          { fabricType: 'Rayon', slug: 'rayon', pricePerMetre: 320, stockQuantity: 300 },
-          { fabricType: 'Polyester', slug: 'polyester', pricePerMetre: 250, stockQuantity: 200 },
-          { fabricType: 'Silk', slug: 'silk', pricePerMetre: 450, stockQuantity: 150 },
-          { fabricType: 'Woollen', slug: 'woollen', pricePerMetre: 380, stockQuantity: 180 },
-          { fabricType: 'Linen', slug: 'linen', pricePerMetre: 400, stockQuantity: 100 },
-          { fabricType: 'Nylon', slug: 'nylon', pricePerMetre: 240, stockQuantity: 250 },
-          { fabricType: 'Acrylic', slug: 'acrylic', pricePerMetre: 220, stockQuantity: 350 }
+          { fabricType: 'Cotton', slug: 'cotton', pricePerMetre: 175, stockQuantity: 500 },
+          { fabricType: 'Rayon', slug: 'rayon', pricePerMetre: 210, stockQuantity: 300 },
+          { fabricType: 'Polyester', slug: 'polyester', pricePerMetre: 155, stockQuantity: 200 },
+          { fabricType: 'Silk', slug: 'silk', pricePerMetre: 345, stockQuantity: 150 },
+          { fabricType: 'Woollen', slug: 'woollen', pricePerMetre: 275, stockQuantity: 180 },
+          { fabricType: 'Linen', slug: 'linen', pricePerMetre: 295, stockQuantity: 100 },
+          { fabricType: 'Nylon', slug: 'nylon', pricePerMetre: 145, stockQuantity: 250 },
+          { fabricType: 'Acrylic', slug: 'acrylic', pricePerMetre: 135, stockQuantity: 350 }
         ]);
       } finally { setLoading(false); }
     };
@@ -66,68 +66,67 @@ export default function WeavingPage() {
       return 0;
     });
 
-  const FabricCard = ({ cloth, index }) => {
+  const FabricCard = ({ cloth }) => {
     const qty = quantities[cloth.slug] || 0;
     const stock = cloth.stockQuantity ?? 999;
     return (
       <div className={viewMode === 'grid'
-        ? 'bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group flex flex-col'
-        : 'bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex'}>
-        <div className={viewMode === 'grid' ? 'relative h-48 overflow-hidden bg-gray-100' : 'relative w-48 flex-shrink-0 overflow-hidden bg-gray-100'}>
-          <img src={clothImages[cloth.slug] || clothImages['cotton']} alt={cloth.fabricType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ? 'group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 flex flex-col'
+        : 'group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row'}>
+        {/* Image */}
+        <div className={viewMode === 'grid' ? 'relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-800' : 'relative w-full sm:w-64 h-48 sm:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800'}>
+          <img src={clothImages[cloth.slug] || clothImages['cotton']} alt={cloth.fabricType} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {stock > 0
-            ? <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">IN STOCK</div>
-            : <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><span className="bg-red-600 text-white text-sm font-bold px-4 py-2 rounded">OUT OF STOCK</span></div>}
+            ? <div className="absolute top-4 left-4 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg shadow-emerald-500/20 tracking-wider">AVAILABLE</div>
+            : <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center"><span className="bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl">OUT OF STOCK</span></div>}
         </div>
-        <div className={viewMode === 'grid' ? 'p-4 flex-1 flex flex-col' : 'flex-1 p-5 flex flex-col sm:flex-row gap-4'}>
-          <div className="flex-1">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">{cloth.fabricType} Fabric</h3>
-              <span className="flex-shrink-0 bg-purple-50 text-purple-700 text-xs font-bold px-2 py-0.5 rounded">WEAVING</span>
+        {/* Content */}
+        <div className="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg leading-tight transition-colors group-hover:text-purple-600 dark:group-hover:text-purple-400">{cloth.fabricType} Fabric</h3>
+              <span className="flex-shrink-0 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-[10px] font-black px-2 py-1 rounded-md tracking-tighter uppercase border border-purple-100/50 dark:border-purple-400/20">Woven</span>
             </div>
-            <p className="text-sm text-gray-500 mb-2">Premium woven {cloth.fabricType.toLowerCase()} fabric for garments & textiles</p>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-0.5 bg-green-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">4.{2 + index} <svg className="w-3 h-3 ml-0.5 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg></div>
-              <span className="text-xs text-gray-400">({95 + index * 14})</span>
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold text-gray-900">₹{cloth.pricePerMetre}</span>
-              <span className="text-sm text-gray-500">/metre</span>
-              <span className="text-sm text-gray-400 line-through ml-1">₹{Math.round(cloth.pricePerMetre * 1.18)}</span>
-              <span className="text-sm font-semibold text-green-600">18% off</span>
-            </div>
-            <p className="text-xs text-gray-400 mb-3">{stock > 0 ? stock + ' metres available' : 'Currently unavailable'}</p>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-full">Free Delivery</span>
-              <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">COD Available</span>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">Premium woven {cloth.fabricType.toLowerCase()} fabric. Superior GSM & texture for export quality garments.</p>
+            
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-slate-900 dark:text-white">₹{cloth.pricePerMetre}</span>
+                <span className="text-xs font-bold text-slate-400">/m</span>
+              </div>
+              <span className="text-xs text-slate-400 line-through">₹{Math.round(cloth.pricePerMetre * 1.18)}</span>
+              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded uppercase tracking-tighter">18% OFF</span>
             </div>
           </div>
-          <div className="mt-3 sm:mt-0 sm:min-w-[160px] flex flex-col gap-2">
-            {qty === 0 ? (
-              <button onClick={() => incrementQuantity(cloth.slug, stock)} disabled={stock <= 0}
-                className={'w-full py-3 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ' + (stock > 0 ? 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]' : 'bg-gray-100 text-gray-400 cursor-not-allowed')}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>
-                {stock > 0 ? 'ADD TO ORDER' : 'OUT OF STOCK'}
-              </button>
-            ) : (
-              <>
-                <div className="flex items-center justify-center gap-1 bg-gray-50 rounded-lg p-1">
-                  <button onClick={() => decrementQuantity(cloth.slug)} className="w-9 h-9 rounded-md bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors font-bold">-</button>
-                  <span className="px-3 text-base font-bold text-gray-900">{qty} <span className="text-xs text-gray-500 font-normal">m</span></span>
-                  <button onClick={() => incrementQuantity(cloth.slug, stock)} disabled={qty >= stock}
-                    className={'w-9 h-9 rounded-md flex items-center justify-center font-bold transition-colors ' + (qty < stock ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed')}>+</button>
-                </div>
-                <div className="text-center text-sm font-semibold text-blue-700 bg-blue-50 rounded-lg py-1.5">₹{(cloth.pricePerMetre * qty).toLocaleString()}</div>
-                {cartCount > 1 ? (
-                  <div className="w-full py-2.5 rounded-lg bg-gray-100 text-gray-600 font-bold text-sm text-center cursor-not-allowed border border-gray-300">
-                    <div className="text-xs font-semibold mb-0.5">Use PLACE ORDER below</div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <span className="flex items-center gap-1.5"><div className={`w-1.5 h-1.5 rounded-full ${stock > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} /> {stock}m Ready</span>
+              <span className="flex items-center gap-1.5"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Quality Checked</span>
+            </div>
+
+            <div className="flex gap-2">
+              {qty === 0 ? (
+                <button 
+                  onClick={() => incrementQuantity(cloth.slug, stock)} 
+                  disabled={stock <= 0}
+                  className="flex-1 py-3.5 bg-slate-900 dark:bg-purple-600 dark:hover:bg-purple-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:shadow-none"
+                >
+                  {stock > 0 ? 'Add to Order' : 'Notify Me'}
+                </button>
+              ) : (
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                    <button onClick={() => decrementQuantity(cloth.slug)} className="w-10 h-10 flex items-center justify-center text-slate-900 dark:text-white hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all font-bold shadow-sm active:scale-90">-</button>
+                    <span className="text-sm font-black text-slate-900 dark:text-white">{qty} <span className="text-[10px] text-slate-400 font-bold">M</span></span>
+                    <button onClick={() => incrementQuantity(cloth.slug, stock)} disabled={qty >= stock} className="w-10 h-10 flex items-center justify-center text-slate-900 dark:text-white hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all font-bold shadow-sm active:scale-90">+</button>
                   </div>
-                ) : (
                   <Link to="/booking" state={{ type: 'product', category: 'weaving', item: cloth.fabricType, itemSlug: cloth.slug, price: cloth.pricePerMetre, unit: 'metre', quantity: qty }}
-                    className="w-full py-2.5 rounded-lg bg-orange-500 text-white font-bold text-sm hover:bg-orange-600 text-center block active:scale-[0.98]">BUY NOW</Link>
-                )}
-              </>
-            )}
+                    className="w-full py-2 bg-purple-600 text-white text-[11px] font-black tracking-widest uppercase rounded-lg hover:bg-purple-700 text-center transition-all shadow-md active:scale-95">Checkout Now</Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -135,86 +134,156 @@ export default function WeavingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f3f6] font-sans">
-      <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 pt-28 pb-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 text-purple-200 text-sm mb-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-500">
+      {/* Premium Header/Banner */}
+      <div className="relative pt-32 pb-20 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-slate-900 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500 via-transparent to-transparent animate-pulse" />
+          <div className="absolute w-[800px] h-[800px] bg-purple-500/10 rounded-full blur-[120px] -top-1/2 -left-1/4 animate-parallaxSlow" />
+          <div className="absolute w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[100px] -bottom-1/4 -right-1/4 animate-float" />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <nav className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest mb-6">
             <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
-            <span className="text-white font-medium">Weaving Products</span>
-          </div>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div><h1 className="text-3xl md:text-4xl font-bold text-white mb-1">Weaving Fabrics</h1><p className="text-purple-200 text-sm">Premium woven textiles for every need</p></div>
-            <div className="relative max-w-sm w-full">
-              <input type="text" placeholder="Search fabrics..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-purple-200 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 focus:outline-none transition-all" />
-              <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <span className="text-slate-600">/</span>
+            <span className="text-white">Weaving</span>
+          </nav>
+          
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+            <div className="max-w-2xl">
+              <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-[0.85] tracking-tighter">
+                EXQUISITE <span className="text-purple-500">WEAVE</span><br />COLLECTION
+              </h1>
+              <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-lg mb-8">
+                Masterfully crafted textiles. From high-grade cotton to luxurious silk, discover fabrics engineered for elite garment manufacturing.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-3 rounded-2xl">
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                  <span className="text-[11px] font-black text-slate-200 uppercase tracking-widest">Premium Quality Matrix</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full lg:max-w-md">
+              <div className="relative group">
+                <input 
+                  type="text" 
+                  placeholder="SEARCH FABRICS..." 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-14 pr-6 py-6 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 text-white placeholder-slate-500 font-bold text-sm tracking-widest uppercase focus:bg-white/10 focus:border-purple-500/50 outline-none transition-all shadow-2xl" 
+                />
+                <svg className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">Showing <strong className="text-gray-900">{sorted.length}</strong> fabrics</span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
-              <option value="default">Sort by: Relevance</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="name">Name: A to Z</option>
-            </select>
+
+      {/* Main Content Area */}
+      <div className="container mx-auto px-4 -mt-10 relative z-20 pb-40">
+        {/* Toolbar Card */}
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-3xl p-6 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-8">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Textile Inventory</p>
+              <p className="text-lg font-black text-slate-900 dark:text-white uppercase leading-none">{sorted.length} FABRIC VARIANTS</p>
+            </div>
+            <div className="h-8 w-px bg-slate-200 dark:bg-slate-800" />
+            <div className="relative">
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-bold text-slate-600 dark:text-slate-300 outline-none cursor-pointer hover:text-purple-500 transition-colors py-2 uppercase tracking-tighter">
+                <option value="default">Catalogue Ranking</option>
+                <option value="price-low">Economic to Premium</option>
+                <option value="price-high">Premium to Economic</option>
+                <option value="name">A-Z Lexical</option>
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setViewMode('grid')} className={'p-2 rounded-lg ' + (viewMode === 'grid' ? 'bg-purple-50 text-purple-600' : 'text-gray-400 hover:text-gray-600')}>
+
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+            <button onClick={() => setViewMode('grid')} className={`p-3 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-md scale-105' : 'text-slate-400 hover:text-slate-600'}`}>
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 8a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zm6-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zm0 8a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
             </button>
-            <button onClick={() => setViewMode('list')} className={'p-2 rounded-lg ' + (viewMode === 'list' ? 'bg-purple-50 text-purple-600' : 'text-gray-400 hover:text-gray-600')}>
+            <button onClick={() => setViewMode('list')} className={`p-3 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-md scale-105' : 'text-slate-400 hover:text-slate-600'}`}>
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
             </button>
           </div>
         </div>
-      </div>
-      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
-        <div className="container mx-auto px-4 py-2.5 flex items-center gap-3 overflow-x-auto text-sm">
-          <span className="flex-shrink-0 bg-green-600 text-white text-xs font-bold px-2.5 py-1 rounded">OFFERS</span>
-          <span className="text-gray-700 flex-shrink-0">Bulk order? Get <strong className="text-green-700">15% off</strong> on 200+ metres</span>
-          <span className="text-gray-300 flex-shrink-0">|</span>
-          <span className="text-gray-700 flex-shrink-0">Free delivery on orders above ₹5,000</span>
-          <span className="text-gray-300 flex-shrink-0">|</span>
-          <span className="text-gray-700 flex-shrink-0">Cash on Delivery available</span>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-6">
+        {/* Product Grid/List */}
         {loading ? (
-          <div className="flex flex-col justify-center items-center py-32"><div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div><p className="text-purple-600 font-medium">Loading fabrics...</p></div>
+          <div className="flex flex-col justify-center items-center py-40">
+            <div className="relative">
+              <div className="w-20 h-20 border-2 border-purple-500/20 rounded-full animate-ping absolute inset-0" />
+              <div className="w-20 h-20 border-4 border-slate-200 dark:border-slate-800 border-t-purple-500 rounded-full animate-spin" />
+            </div>
+            <p className="mt-8 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm">Syncing Fabric Database...</p>
+          </div>
         ) : sorted.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center"><h3 className="text-lg font-bold text-gray-800 mb-2">No fabrics found</h3><p className="text-gray-500">Try adjusting your search</p></div>
+          <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800">
+            <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-400">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">No Fabrics Found</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Try broadening your search criteria.</p>
+          </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">{sorted.map((cloth, i) => <FabricCard key={i} cloth={cloth} index={i} />)}</div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {sorted.map((cloth, i) => <FabricCard key={i} cloth={cloth} index={i} />)}
+          </div>
         ) : (
-          <div className="space-y-3">{sorted.map((cloth, i) => <FabricCard key={i} cloth={cloth} index={i} />)}</div>
+          <div className="space-y-6">
+            {sorted.map((cloth, i) => <FabricCard key={i} cloth={cloth} index={i} />)}
+          </div>
         )}
       </div>
 
+      {/* Premium Floating Cart */}
       {cartCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-purple-600 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-40">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold">{cartCount}</div>
-              <div><div className="text-xs text-gray-500">Items selected</div><div className="text-lg font-bold text-gray-900">₹{cartTotal.toLocaleString()}</div></div>
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-full max-w-[95%] sm:max-w-lg md:max-w-2xl lg:max-w-4xl px-2 animate-fade-in-up">
+          <div className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-3xl border border-white/10 p-4 md:p-5 md:pl-8 rounded-[2rem] shadow-2xl flex items-center justify-between gap-3 ring-1 ring-white/10">
+            <div className="flex items-center gap-4 md:gap-12">
+              <div className="relative hidden md:block">
+                <div className="absolute -top-3 -right-3 w-8 h-8 bg-purple-500 border-4 border-slate-900 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg">
+                  {cartCount}
+                </div>
+                <div className="w-16 h-16 bg-white/10 rounded-[1.25rem] flex items-center justify-center text-purple-400">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 11-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                </div>
+              </div>
+              
+              <div className="flex items-center md:hidden w-10 h-10 bg-white/10 rounded-xl justify-center text-purple-400 relative">
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-lg">
+                    {cartCount}
+                  </div>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 11-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              </div>
+              
+              <div>
+                <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1 md:mb-1.5 font-mono">SELECTION VALUE</p>
+                <p className="text-lg sm:text-xl md:text-3xl font-black text-white leading-none">₹{cartTotal.toLocaleString()}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setQuantities({})} className="px-4 py-2 text-sm text-gray-600 hover:text-red-600">Clear All</button>
+            
+            <div className="flex items-center gap-2 md:gap-6">
+              <button 
+                onClick={() => setQuantities({})} 
+                className="text-[10px] md:text-xs font-black text-slate-500 hover:text-rose-500 uppercase tracking-widest transition-colors px-2"
+              >
+                Reset
+              </button>
               <Link to="/booking" state={{ 
                 type: 'product', 
                 category: 'weaving', 
-                items: clothTypes.filter(c => quantities[c.slug] > 0).map(c => ({
-                  item: c.fabricType,
-                  itemSlug: c.slug,
-                  price: c.pricePerMetre,
-                  unit: 'metre',
-                  quantity: quantities[c.slug]
-                }))
+                items: clothTypes.filter(c => quantities[c.slug] > 0).map(c => ({ item: c.fabricType, itemSlug: c.slug, price: c.pricePerMetre, unit: 'metre', quantity: quantities[c.slug] }))
               }}
-                className="px-8 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 text-sm">PLACE ORDER</Link>
+                className="px-4 md:px-12 py-3 md:py-5 bg-purple-600 text-white font-black rounded-xl md:rounded-2xl text-[10px] sm:text-[11px] md:text-[13px] tracking-widest uppercase hover:bg-purple-700 transition-all shadow-xl shadow-purple-600/30 active:scale-95 flex items-center gap-2 md:gap-4 group whitespace-nowrap"
+              >
+                <span className="hidden sm:inline">Place Bulk </span> Order
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </Link>
             </div>
           </div>
         </div>

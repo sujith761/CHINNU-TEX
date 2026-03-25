@@ -90,8 +90,9 @@ export default function BookingsPage() {
                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Process</th>
                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Quantity</th>
                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Amount</th>
-                  <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Status</th>
-                  <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Actions</th>
+                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Status</th>
+                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Date</th>
+                   <th className="p-4 text-left text-xs uppercase tracking-wider text-white/25 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,11 +110,14 @@ export default function BookingsPage() {
                     <td className="p-4 capitalize text-white/40">{b.processType}</td>
                     <td className="p-4 text-white/40">{b.quantityMeters}m</td>
                     <td className="p-4 font-semibold text-white">₹{b.totalAmount}</td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColor(b.status)}`}>
-                        {b.status}
-                      </span>
-                    </td>
+                     <td className="p-4">
+                       <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColor(b.status)}`}>
+                         {b.status}
+                       </span>
+                     </td>
+                     <td className="p-4 text-sm text-white/40">
+                       {b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().toLocaleDateString() : new Date(b.createdAt).toLocaleDateString()) : '—'}
+                     </td>
                     <td className="p-4">
                       <select
                         value={b.status}

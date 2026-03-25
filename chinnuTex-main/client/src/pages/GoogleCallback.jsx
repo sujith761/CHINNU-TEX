@@ -13,8 +13,11 @@ export default function GoogleCallback() {
   }, [location.search, navigate]);
 
   return (
-	<div className="min-h-screen bg-gradient-to-b from-primary-50 via-accent-light/40 to-white flex items-center justify-center">
-      <div className="text-center text-gray-600">Redirecting…</div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-500">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400 animate-pulse">Synchronizing Identity…</div>
+      </div>
     </div>
   );
 }

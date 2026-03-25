@@ -1,46 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read/write their own user doc
+
+    // Helper: check if the authenticated user has an admin doc
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Users: own doc or admin
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Bookings: users can read their own, create new ones
+    // Bookings: own bookings or admin
     match /bookings/{bookingId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if request.auth != null;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Contact messages: users can read their own, create new ones
-    match /contacts/{contactId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+    // Contact messages: own messages or admin
+    match /contactMessages/{msgId} {
+      allow read, write: if request.auth != null && isAdmin();
       allow create: if request.auth != null;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    // Pricing data: readable by anyone
+    // Pricing data: readable by anyone, writable by admin
     match /sizingPrices/{docId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
     match /weavingPrices/{docId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // Products: readable by anyone
+    // Products: readable by anyone, writable by admin
     match /products/{docId} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // Payments: users can read their own
+    // Payments: own payments or admin
     match /payments/{paymentId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if request.auth != null;
+      allow update: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Admins collection
+    // Admins collection: admin can read own doc
     match /admins/{adminId} {
-      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow read: if request.auth != null && (request.auth.uid == adminId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Chatbot conversations: readable/writable by the creating user or guest
+    match /chatbotConversations/{sessionId} {
+      allow read, write: if true;
     }
   }
 }
+

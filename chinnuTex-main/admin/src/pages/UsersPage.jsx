@@ -162,7 +162,9 @@ export default function UsersPage() {
                         <span className={`px-2 py-1 rounded text-xs font-bold border ${u.role === 'admin' ? 'bg-neon-amber/10 text-neon-amber border-neon-amber/20' : 'bg-neon-blue/10 text-neon-blue border-neon-blue/20'}`}>{u.role}</span>
                       )}
                     </td>
-                    <td className="px-6 py-3 text-white/40">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-3 text-white/40">
+                      {u.createdAt ? (u.createdAt.toDate ? u.createdAt.toDate().toLocaleDateString() : new Date(u.createdAt).toLocaleDateString()) : '—'}
+                    </td>
                     <td className="px-6 py-3 flex gap-2">
                       {editing === (u._id || u.id) ? (
                         <>

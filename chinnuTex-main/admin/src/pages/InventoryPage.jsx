@@ -7,6 +7,27 @@ export default function InventoryPage() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
 
+    const defaultSizing = [
+        { yarnType: 'Cotton', slug: 'cotton', pricePerKg: 450, stockQuantity: 500 },
+        { yarnType: 'Polyester', slug: 'polyester', pricePerKg: 520, stockQuantity: 300 },
+        { yarnType: 'Viscose', slug: 'viscose', pricePerKg: 480, stockQuantity: 200 },
+        { yarnType: 'PC Blend', slug: 'pc-blend', pricePerKg: 510, stockQuantity: 150 },
+        { yarnType: 'PV Blend', slug: 'pv-blend', pricePerKg: 490, stockQuantity: 180 },
+        { yarnType: 'Nylon', slug: 'nylon', pricePerKg: 550, stockQuantity: 100 },
+        { yarnType: 'Acrylic', slug: 'acrylic', pricePerKg: 470, stockQuantity: 250 },
+    ];
+
+    const defaultWeaving = [
+        { fabricType: 'Cotton', slug: 'cotton', pricePerMetre: 280, stockQuantity: 500 },
+        { fabricType: 'Rayon', slug: 'rayon', pricePerMetre: 320, stockQuantity: 300 },
+        { fabricType: 'Polyester', slug: 'polyester', pricePerMetre: 250, stockQuantity: 200 },
+        { fabricType: 'Silk', slug: 'silk', pricePerMetre: 450, stockQuantity: 150 },
+        { fabricType: 'Woollen', slug: 'woollen', pricePerMetre: 380, stockQuantity: 180 },
+        { fabricType: 'Linen', slug: 'linen', pricePerMetre: 400, stockQuantity: 100 },
+        { fabricType: 'Nylon', slug: 'nylon', pricePerMetre: 240, stockQuantity: 250 },
+        { fabricType: 'Acrylic', slug: 'acrylic', pricePerMetre: 220, stockQuantity: 350 },
+    ];
+
     useEffect(() => {
         loadInventory();
     }, []);
@@ -16,8 +37,27 @@ export default function InventoryPage() {
             setLoading(true);
             const sizingRes = await api.get('/pricing/sizing/all');
             const weavingRes = await api.get('/pricing/weaving/all');
-            setSizingInventory(sizingRes.data);
-            setWeavingInventory(weavingRes.data);
+
+            // Auto-seed if both collections are empty
+            if ((!sizingRes.data || sizingRes.data.length === 0) && (!weavingRes.data || weavingRes.data.length === 0)) {
+                setMessage('No inventory data found. Seeding default data...');
+                for (const item of defaultSizing) {
+                    await api.post('/pricing/admin/sizing', item);
+                }
+                for (const item of defaultWeaving) {
+                    await api.post('/pricing/admin/weaving', item);
+                }
+                // Reload after seeding
+                const s2 = await api.get('/pricing/sizing/all');
+                const w2 = await api.get('/pricing/weaving/all');
+                setSizingInventory(s2.data);
+                setWeavingInventory(w2.data);
+                setMessage('Default inventory loaded successfully!');
+                setTimeout(() => setMessage(''), 3000);
+            } else {
+                setSizingInventory(sizingRes.data);
+                setWeavingInventory(weavingRes.data);
+            }
         } catch (err) {
             console.error('Failed to load inventory', err);
         } finally {
